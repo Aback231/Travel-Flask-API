@@ -1,0 +1,24 @@
+version: '3'
+services:
+  web:
+    build: ./web
+    container_name: web
+    ports:
+      - "5000:5000"
+    links:
+      - db
+  db:
+    image: postgres:latest
+    container_name: postgres_db_container
+    ports:
+      - "5432:5432"
+    volumes:
+      - ods:/var/lib/postgresql/data
+    restart: always
+    environment:
+        POSTGRES_USER: user
+        POSTGRES_PASSWORD: pass
+        POSTGRES_DB: db
+
+volumes:
+  ods:
