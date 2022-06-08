@@ -1,0 +1,101 @@
+{
+	"info": {
+		"_postman_id": "418d303a-df4c-408c-ae8a-170dd5522bc9",
+		"name": "Turisticka_agencija",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21319787"
+	},
+	"item": [
+		{
+			"name": "/register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\":\"Andrija\",\n    \"last_name\":\"Petrovic\",\n    \"email\":\"email@gmail.com\",\n    \"username\":\"Aback1113\",\n    \"password\":\"1234\",\n    \"password_confirmation\":\"1234\",\n    \"acc_type\":\"Admin\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/register",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"tests[\"access_token not empty\"] = jsonData.access_token !== undefined;",
+							"pm.environment.set(\"jwt_token\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\":\"Aback1113\",\n    \"password\":\"1234\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/logout",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/logout",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
