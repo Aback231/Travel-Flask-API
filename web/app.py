@@ -1,64 +1,82 @@
-from flask import Flask, request
-from flask_restful import Api, Resource
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify
+from flask_restful import Api
+from flask_jwt_extended import JWTManager
+
+from db import db
+from blacklist import BLACKLIST
+from resources.user import Register, Login, Logout, TokenRefresh
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"
+#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.db"    # Local Sqlite for quick testing
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.debug = True
+app.config['PROPAGATE_EXCEPTIONS'] = True
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.secret_key = 'secret'
 api = Api(app)
 
-db = SQLAlchemy(app)
+# Disable when docker-compose up
+#db.init_app(app)
 
+# Create DB
 @app.before_first_request
 def create_tables():
     db.create_all()
 
-class User(db.Model):
-    __tablename__ = 'users'
+jwt = JWTManager(app)
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80))
-    password = db.Column(db.String(80))
+# Check if a token is blacklisted
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(arg, decrypted_token):
+    return decrypted_token['jti'] in BLACKLIST
 
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+# Customizing jwt response/error messages
+@jwt.expired_token_loader
+def expired_token_callback():
+    return jsonify({
+        'message': 'Token has expired.',
+        'error': 'token_expired'
+    }), 401
 
-    def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+# Signature validation
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({
+        'message': 'Signature validation failed.',
+        'error': 'invalid_token'
+    }), 401
 
-    @classmethod
-    def find_by_username(cls, username):
-        return cls.query.filter_by(username=username).first()
-    
-class Register(Resource):
-    def post(self):
-        data = request.get_json()
+# No TOken
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({
+        "description": "Request does not contain access token.",
+        'error': 'authorization_required'
+    }), 401
 
-        if User.find_by_username(data['username']):
-            return {"message": "A user with that username already exists"}, 400
+# Token not fresh
+@jwt.needs_fresh_token_loader
+def token_not_fresh_callback():
+    return jsonify({
+        "description": "Token is not fresh.",
+        'error': 'fresh_token_required'
+    }), 401
 
-        user = User(**data)
-        user.save_to_db()
-        return {"message": f"User {data['username']} created successfully."}, 201
-
-class FindUser(Resource):
-    def post(self):
-        data = request.get_json()
-        print(data["username"])
-
-        # test code
-        user = User.find_by_username(data["username"])
-        if user:
-            return {"message": f"User {data['username']} found."}, 200
-        else:
-            return {"message": f"User {data['username']} not found."}, 401
-
+# TOken rewoked
+@jwt.revoked_token_loader
+def revoked_token_callback():
+    return jsonify({
+        "description": "Token has been revoked.",
+        'error': 'token_revoked'
+    }), 401
 
 api.add_resource(Register, '/register')
-api.add_resource(FindUser, '/find_user')
+api.add_resource(Login, '/login')
+api.add_resource(Logout, '/logout')
+api.add_resource(TokenRefresh, '/refresh')
 
-if __name__=="__main__":
-    app.run(host='0.0.0.0')
+if __name__ == '__main__':
+    # Disable when flask run
+    db.init_app(app)
+    app.run(host='0.0.0.0', debug=True)
