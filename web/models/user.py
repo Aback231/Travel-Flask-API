@@ -1,5 +1,6 @@
 from db import db
 
+DEFAULT_ACC_TYPE = "Tourist"
 acc_type = ["Tourist", "Travel Guide", "Admin"]
 
 class UserModel(db.Model):
@@ -20,7 +21,7 @@ class UserModel(db.Model):
         self.email = email
         self.username = username
         self.password = password
-        self.acc_type = "Tourist"
+        self.acc_type = DEFAULT_ACC_TYPE
         self.acc_type_requested = acc_type
 
     def save_to_db(self):
