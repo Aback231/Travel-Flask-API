@@ -1,116 +1,139 @@
 import bcrypt
-from flask_restful import Resource, reqparse
+import traceback
+from flask_restful import Resource
+from flask import request
+from marshmallow import INCLUDE
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     get_jwt_identity,
     jwt_required,
-    get_jwt
+    get_jwt,
 )
+
 from models.user import UserModel
+from schemas.user import UserSchema, LogInSchema
 from blacklist import BLACKLIST
+from decorators.roles import roles
+from helpers.user_roles import UserRoles
 
-BLANK_FIELD = "This field can't be blank."
+USER_ALREADY_EXISTS = "A user with that username already exists."
+EMAIL_ALREADY_EXISTS = "A user with that email already exists."
+USER_NOT_FOUND = "User not found."
+USER_DELETED = "User deleted."
+INVALID_CREDENTIALS = "Invalid credentials!"
+USER_LOGGED_OUT = "Logout successful."
+FAILED_TO_CREATE = "Internal server error. Failed to create user."
+REGISTER_SUCCESS_MESSAGE = "Account created successfully."
+PASSWORD_MISMATCH = "Passwords don't match!"
+PASSWORD_CONFIRMATION = "Passwords confirmation is required!"
+USER_ACC_CHANGED = ("User Account type changed successfully to <{}>.")
+USER_ACC_CHANGED_ALREADY = ("User Account type was already changed.")
 
-_user_parser_register = reqparse.RequestParser()
-_user_parser_register.add_argument('first_name',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
-_user_parser_register.add_argument('last_name',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
-_user_parser_register.add_argument('email',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )                                              
-_user_parser_register.add_argument('username',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
-_user_parser_register.add_argument('password',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
-_user_parser_register.add_argument('password_confirmation',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
-_user_parser_register.add_argument('acc_type',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )                      
 
-_user_parser_login = reqparse.RequestParser()
-_user_parser_login.add_argument('username',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
-_user_parser_login.add_argument('password',
-                          type=str,
-                          required=True,
-                          help=BLANK_FIELD
-                          )
+user_schema = UserSchema(unknown=INCLUDE)
+login_schema = LogInSchema()
 
-class Register(Resource):
-    def post(self):
-        # Parse request args
-        data = _user_parser_register.parse_args()
 
-        # Check if user exists
-        if UserModel.find_by_username(data['username']):
-            return {"message": "User already exists!"}, 400
+class UserRegister(Resource):
+    @classmethod
+    def post(cls):
+        user_json = request.get_json()
+        user = user_schema.load(user_json)
+        
+        if UserModel.find_by_username(user.username):
+            return {"message": USER_ALREADY_EXISTS}, 400
+
+        if UserModel.find_by_email(user.email):
+            return {"message": EMAIL_ALREADY_EXISTS}, 400
 
         # Validate password confirmation
-        if not safe_str_cmp(data['password'], data['password_confirmation']):
-            return {"message": "Passwords don't match!"}, 400
+        if "password_confirmation" not in user_json.keys():
+            return {"message": PASSWORD_CONFIRMATION}, 400
+        if not safe_str_cmp(user.password, user_json["password_confirmation"]):
+            return {"message": PASSWORD_MISMATCH}, 400
 
-        # Encrypt password for DB storing
-        data['password'] = bcrypt.hashpw(data['password'].encode('utf8'), bcrypt.gensalt())
+        try:
+            # Encrypt password for DB storing
+            user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt(16)).decode()
+            user.acc_type = UserRoles.DEFAULT_ROLE.value
+            user.save_to_db()
+            return {"message": REGISTER_SUCCESS_MESSAGE}, 201
+        except:  # failed to save user to db
+            traceback.print_exc()
+            return {"message": FAILED_TO_CREATE}, 500
 
-        user = UserModel(**data)
-        user.save_to_db()
 
-        return {"message": "User created successfully."}, 201
+class UserLogin(Resource):
+    @classmethod
+    def post(cls):
+        user_json = request.get_json()
+        user_data = login_schema.load(user_json, partial=("email",))
 
-class Login(Resource):
-    def post(self):
-        data = _user_parser_login.parse_args()
-        user = UserModel.find_by_username(data['username'])
+        user = UserModel.find_by_username(user_data.username)
 
         # Hash provided pass and compare to the one stored in DB for givrn UserName
-        if user and safe_str_cmp(bcrypt.hashpw(data['password'].encode('utf8'), user.password), user.password):
-            access_token = create_access_token(identity=user.id, fresh=True) 
+        if user and safe_str_cmp(bcrypt.hashpw(user_data.password.encode('utf8'), user.password.encode()), user.password.encode()):
+            access_token = create_access_token(identity=user.id, fresh=True, additional_claims={"acc_type": user.acc_type})
             refresh_token = create_refresh_token(user.id)
-            return {
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }, 200
+            return (
+                {"access_token": access_token, "refresh_token": refresh_token, "username": user.username, "acc_type": user.acc_type},
+                200,
+            )
 
-        return {"message": "Invalid Credentials!"}, 401
+        return {"message": INVALID_CREDENTIALS}, 401
 
 # LogOut, JWT access_token must be provided in Header
-class Logout(Resource):
+class UserLogout(Resource):
+    @classmethod
     @jwt_required()
-    def post(self):
+    def post(cls):
         jti = get_jwt()['jti']
         BLACKLIST.add(jti)
-        return {"message": "Logout successful"}, 200
+        return {"message": USER_LOGGED_OUT}, 200
 
-# Get a new refreshed access token without requiring username and password
+# Request Fresh Token 
 class TokenRefresh(Resource):
+    @classmethod
     @jwt_required(refresh=True)
-    def post(self):
+    def post(cls):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
-        return {'access_token': new_token}, 200
+        return {"access_token": new_token}, 200
+
+# Change User account type, as per user request
+class UserAccountChange(Resource):
+    @classmethod
+    @roles.role_auth([UserRoles.ADMIN.value])
+    def get(cls, username: int):
+        user = UserModel.find_by_username(username)
+        if not user:
+            return {"message": USER_NOT_FOUND}, 404
+
+        if safe_str_cmp(user.acc_type, user.acc_type_requested):
+            return {"message": USER_ACC_CHANGED_ALREADY}, 200
+
+        user.acc_type = user.acc_type_requested
+        user.save_to_db()
+
+        return {"message": USER_ACC_CHANGED.format(user.acc_type_requested)}, 200
+
+### Only for testing purposes
+class User(Resource):
+    @classmethod
+    def get(cls, user_id: int):
+        user = UserModel.find_by_id(user_id)
+        if not user:
+            return {"message": USER_NOT_FOUND}, 404
+
+        return user_schema.dump(user), 200
+
+    @classmethod
+    def delete(cls, user_id: int):
+        user = UserModel.find_by_id(user_id)
+        if not user:
+            return {"message": USER_NOT_FOUND}, 404
+
+        user.delete_from_db()
+        return {"message": USER_DELETED}, 200

@@ -5,3 +5,5 @@ Flask_SQLAlchemy==2.5.1
 Werkzeug==2.0.2
 psycopg2-binary
 bcrypt
+flask_marshmallow
+marshmallow-sqlalchemy
