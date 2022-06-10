@@ -15,6 +15,7 @@ from flask_jwt_extended import (
 from models.user import UserModel
 from schemas.user import UserSchema, LogInSchema
 from blacklist import BLACKLIST
+from libs.mailgun import MailGunException
 from decorators.roles import roles
 from helpers.user_roles import UserRoles
 
@@ -56,10 +57,13 @@ class UserRegister(Resource):
 
         try:
             # Encrypt password for DB storing
-            user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt(16)).decode()
+            user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt())
             user.acc_type = UserRoles.DEFAULT_ROLE.value
             user.save_to_db()
+            user.send_registration_confirmation_email()
             return {"message": REGISTER_SUCCESS_MESSAGE}, 201
+        except MailGunException as e:
+            return {"message": str(e)}, 500
         except:  # failed to save user to db
             traceback.print_exc()
             return {"message": FAILED_TO_CREATE}, 500
@@ -74,7 +78,7 @@ class UserLogin(Resource):
         user = UserModel.find_by_username(user_data.username)
 
         # Hash provided pass and compare to the one stored in DB for givrn UserName
-        if user and safe_str_cmp(bcrypt.hashpw(user_data.password.encode('utf8'), user.password.encode()), user.password.encode()):
+        if user and safe_str_cmp(bcrypt.hashpw(user_data.password.encode('utf8'), user.password), user.password):
             access_token = create_access_token(identity=user.id, fresh=True, additional_claims={"acc_type": user.acc_type})
             refresh_token = create_refresh_token(user.id)
             return (

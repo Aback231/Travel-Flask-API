@@ -65,7 +65,7 @@ class Arrangement(Resource):
 
         return arrangement_schema.dump(arrangement), 200
 
-# Get List of all Arrangements
+# Get List of all Arrangements, no need for LogIn
 class ArrangementList(Resource):
     @classmethod
     @roles.role_auth([UserRoles.ADMIN.value])

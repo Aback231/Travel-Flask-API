@@ -55,11 +55,11 @@ api.add_resource(UserLogout, "/logout")
 api.add_resource(UserAccountChange, "/acc_change/<string:username>")
 api.add_resource(User, "/user/<int:user_id>")   # endpoint for testing
 
-api.add_resource(Agency, "/store/<string:name>")
-api.add_resource(AgencyList, "/stores")
+api.add_resource(Agency, "/agency/<string:name>")
+api.add_resource(AgencyList, "/agencies")
 
-api.add_resource(Arrangement, "/item/<string:name>")
-api.add_resource(ArrangementList, "/items")
+api.add_resource(Arrangement, "/arrangement/<string:name>")
+api.add_resource(ArrangementList, "/arrangements")
 
 
 if __name__ == "__main__":
