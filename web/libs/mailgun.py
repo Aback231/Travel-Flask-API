@@ -19,7 +19,7 @@ class Mailgun:
     FROM_EMAIL = f"do-not-reply@{MAILGUN_DOMAIN}"
 
     @classmethod
-    def send_email(cls, email: List[str], subject: str, text: str, html: str) -> Response:
+    def send_email(cls, email: List[str], subject: str, html: str) -> Response:
         if cls.MAILGUN_API_KEY is None:
             raise MailGunException(FAILED_LOAD_API_KEY)
 
@@ -33,7 +33,6 @@ class Mailgun:
                 "from": f"{cls.FROM_TITLE} <{cls.FROM_EMAIL}>",
                 "to": email,
                 "subject": subject,
-                "text": text,
                 "html": html,
             },
         )

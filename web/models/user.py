@@ -1,6 +1,3 @@
-from requests import Response
-
-from libs.mailgun import Mailgun
 from db import db
 
 
@@ -27,12 +24,6 @@ class UserModel(db.Model):
     @classmethod
     def find_by_id(cls, _id: int) -> "UserModel":
         return cls.query.filter_by(id=_id).first()
-
-    def send_registration_confirmation_email(self) -> Response:
-        subject = "Registration Confirmation"
-        text = "Username: {'self.username'}"
-        html = "<html>Registration successful.</html>"
-        return Mailgun.send_email([self.email], subject, text, html)
 
     def save_to_db(self) -> None:
         db.session.add(self)

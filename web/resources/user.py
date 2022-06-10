@@ -18,6 +18,7 @@ from blacklist import BLACKLIST
 from libs.mailgun import MailGunException
 from decorators.roles import roles
 from helpers.user_roles import UserRoles
+from libs.mailgun import Mailgun
 
 USER_ALREADY_EXISTS = "A user with that username already exists."
 EMAIL_ALREADY_EXISTS = "A user with that email already exists."
@@ -29,8 +30,12 @@ FAILED_TO_CREATE = "Internal server error. Failed to create user."
 REGISTER_SUCCESS_MESSAGE = "Account created successfully."
 PASSWORD_MISMATCH = "Passwords don't match!"
 PASSWORD_CONFIRMATION = "Passwords confirmation is required!"
-USER_ACC_CHANGED = ("User Account type changed successfully to <{}>.")
+USER_ACC_CHANGED = ("User Account type changed successfully from <{}> to <{}>.")
 USER_ACC_CHANGED_ALREADY = ("User Account type was already changed.")
+MAILGUN_SUBJECT_ACC_CHANGE = "Account type change confirmation"
+MAILGUN_SUBJECT_REGISTER = "Registration Confirmation"
+MAILGUN_HTML_ACC_CHANGE = ("<html>Account type change from <b>{}</b> to <b>{}</b> successful.</html>")
+MAILGUN_HTML_REGISTER = ("<html>Registration successful. Username: <b>{}</b></html>")
 
 
 user_schema = UserSchema(unknown=INCLUDE)
@@ -60,7 +65,7 @@ class UserRegister(Resource):
             user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt())
             user.acc_type = UserRoles.DEFAULT_ROLE.value
             user.save_to_db()
-            user.send_registration_confirmation_email()
+            Mailgun.send_email([user.email], MAILGUN_SUBJECT_REGISTER, MAILGUN_HTML_REGISTER.format(user.username))
             return {"message": REGISTER_SUCCESS_MESSAGE}, 201
         except MailGunException as e:
             return {"message": str(e)}, 500
@@ -109,7 +114,7 @@ class TokenRefresh(Resource):
 # Change User account type, as per user request
 class UserAccountChange(Resource):
     @classmethod
-    @roles.role_auth([UserRoles.ADMIN.value])
+    @roles.role_auth([UserRoles.TOURIST.value])
     def get(cls, username: int):
         user = UserModel.find_by_username(username)
         if not user:
@@ -118,10 +123,13 @@ class UserAccountChange(Resource):
         if safe_str_cmp(user.acc_type, user.acc_type_requested):
             return {"message": USER_ACC_CHANGED_ALREADY}, 200
 
+        acc_type_old = user.acc_type
         user.acc_type = user.acc_type_requested
         user.save_to_db()
 
-        return {"message": USER_ACC_CHANGED.format(user.acc_type_requested)}, 200
+        Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE.format(acc_type_old, user.acc_type_requested))
+
+        return {"message": USER_ACC_CHANGED.format(acc_type_old, user.acc_type_requested)}, 200
 
 ### Only for testing purposes
 class User(Resource):
