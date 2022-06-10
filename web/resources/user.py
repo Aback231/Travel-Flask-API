@@ -36,6 +36,9 @@ MAILGUN_SUBJECT_ACC_CHANGE = "Account type change confirmation"
 MAILGUN_SUBJECT_REGISTER = "Registration Confirmation"
 MAILGUN_HTML_ACC_CHANGE = ("<html>Account type change from <b>{}</b> to <b>{}</b> successful.</html>")
 MAILGUN_HTML_REGISTER = ("<html>Registration successful. Username: <b>{}</b></html>")
+USER_ACC_CHANGE_REQUEST_VALIDATION = "JSON parameter acc_type_requested is required"
+USER_ACC_CHANGE_REQUEST_SUCCESS = ("Account type change request to {} successful.")
+USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION = ("Only <{}> and <{}> account types are allowed as acc_type_requested JSON parameters!")
 
 
 user_schema = UserSchema(unknown=INCLUDE)
@@ -93,6 +96,7 @@ class UserLogin(Resource):
 
         return {"message": INVALID_CREDENTIALS}, 401
 
+
 # LogOut, JWT access_token must be provided in Header
 class UserLogout(Resource):
     @classmethod
@@ -101,6 +105,7 @@ class UserLogout(Resource):
         jti = get_jwt()['jti']
         BLACKLIST.add(jti)
         return {"message": USER_LOGGED_OUT}, 200
+
 
 # Request Fresh Token 
 class TokenRefresh(Resource):
@@ -111,10 +116,34 @@ class TokenRefresh(Resource):
         new_token = create_access_token(identity=current_user, fresh=False)
         return {"access_token": new_token}, 200
 
+
+# Request Fresh Token 
+class UserAccountChangeRequest(Resource):
+    @classmethod
+    @jwt_required()
+    @roles.role_auth([UserRoles.TOURIST.value, UserRoles.TRAVEL_GUIDE.value])
+    def post(cls):
+        if "acc_type_requested" not in request.get_json().keys():
+            return {"message": USER_ACC_CHANGE_REQUEST_VALIDATION}, 400
+
+        acc_type_requested_new = request.get_json()["acc_type_requested"]
+
+        if acc_type_requested_new not in [UserRoles.TRAVEL_GUIDE.value, UserRoles.ADMIN.value]:
+            return {"message": USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION.format(UserRoles.TRAVEL_GUIDE.value, UserRoles.ADMIN.value)}, 400
+
+        user = UserModel.find_by_id(get_jwt_identity())
+
+        user.acc_type_requested = acc_type_requested_new
+        user.save_to_db()
+
+        return {"message": USER_ACC_CHANGE_REQUEST_SUCCESS.format(acc_type_requested_new)}, 200
+
+
+
 # Change User account type, as per user request
 class UserAccountChange(Resource):
     @classmethod
-    @roles.role_auth([UserRoles.TOURIST.value])
+    @roles.role_auth([UserRoles.ADMIN.value])
     def get(cls, username: int):
         user = UserModel.find_by_username(username)
         if not user:
@@ -131,7 +160,12 @@ class UserAccountChange(Resource):
 
         return {"message": USER_ACC_CHANGED.format(acc_type_old, user.acc_type_requested)}, 200
 
-### Only for testing purposes
+
+
+
+
+
+############################## Only for testing purposes ##############################
 class User(Resource):
     @classmethod
     def get(cls, user_id: int):
@@ -149,3 +183,34 @@ class User(Resource):
 
         user.delete_from_db()
         return {"message": USER_DELETED}, 200
+
+class UserRegisterAdmin(Resource):
+    @classmethod
+    def post(cls):
+        user_json = request.get_json()
+        user = user_schema.load(user_json)
+        
+        if UserModel.find_by_username(user.username):
+            return {"message": USER_ALREADY_EXISTS}, 400
+
+        if UserModel.find_by_email(user.email):
+            return {"message": EMAIL_ALREADY_EXISTS}, 400
+
+        # Validate password confirmation
+        if "password_confirmation" not in user_json.keys():
+            return {"message": PASSWORD_CONFIRMATION}, 400
+        if not safe_str_cmp(user.password, user_json["password_confirmation"]):
+            return {"message": PASSWORD_MISMATCH}, 400
+
+        try:
+            # Encrypt password for DB storing
+            user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt())
+            user.acc_type = UserRoles.ADMIN.value
+            user.save_to_db()
+            Mailgun.send_email([user.email], MAILGUN_SUBJECT_REGISTER, MAILGUN_HTML_REGISTER.format(user.username))
+            return {"message": REGISTER_SUCCESS_MESSAGE}, 201
+        except MailGunException as e:
+            return {"message": str(e)}, 500
+        except:  # failed to save user to db
+            traceback.print_exc()
+            return {"message": FAILED_TO_CREATE}, 500

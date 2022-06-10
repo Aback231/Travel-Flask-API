@@ -7,12 +7,14 @@ from db import db
 from ma import ma
 from blacklist import BLACKLIST
 from resources.user import (
-    UserAccountChange,
     UserRegister,
     UserLogin,
-    User,
     TokenRefresh,
     UserLogout,
+    UserAccountChangeRequest,
+    UserAccountChange,
+    User,
+    UserRegisterAdmin,
 )
 from resources.arrangement import Arrangement, ArrangementList
 from resources.agency import Agency, AgencyList
@@ -52,8 +54,10 @@ api.add_resource(UserRegister, "/register")
 api.add_resource(UserLogin, "/login")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
+api.add_resource(UserAccountChangeRequest, "/acc_change_request")
 api.add_resource(UserAccountChange, "/acc_change/<string:username>")
 api.add_resource(User, "/user/<int:user_id>")   # endpoint for testing
+api.add_resource(UserRegisterAdmin, "/register_admin")   # endpoint for testing
 
 api.add_resource(Agency, "/agency/<string:name>")
 api.add_resource(AgencyList, "/agencies")

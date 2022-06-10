@@ -14,6 +14,6 @@ class roles():
                 if claims["acc_type"] in acc_type:
                     return fn(*args, **kwargs)
                 else:
-                    return {"message": f"Only <{acc_type}> account type(s) allowed!"}, 403
+                    return {"message": f"Only <{acc_type}> account type(s) are allowed to execute this API endpoint!"}, 403
             return decorator
         return wrapper
