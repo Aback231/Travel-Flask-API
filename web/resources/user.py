@@ -117,7 +117,7 @@ class TokenRefresh(Resource):
         return {"access_token": new_token}, 200
 
 
-# Request Fresh Token 
+# Request account type change. Only TOURIST and TRAVEL_GUIDE are allowed to execute this endpoint.
 class UserAccountChangeRequest(Resource):
     @classmethod
     @jwt_required()
@@ -184,6 +184,8 @@ class User(Resource):
         user.delete_from_db()
         return {"message": USER_DELETED}, 200
 
+
+# Create Admin account
 class UserRegisterAdmin(Resource):
     @classmethod
     def post(cls):
