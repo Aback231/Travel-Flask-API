@@ -16,12 +16,12 @@ from resources.user import (
     User,
     UserRegisterAdmin,
 )
-from resources.arrangement import Arrangement, ArrangementList
-from resources.agency import Agency, AgencyList
+from resources.arrangement import Arrangement, ArrangementList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
-#app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.db"    # Local Sqlite for quick testing
+#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.db"    # Local Sqlite for quick testing
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_BLACKLIST_ENABLED'] = True
@@ -55,15 +55,16 @@ api.add_resource(UserLogin, "/login")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
 api.add_resource(UserAccountChangeRequest, "/acc_change_request")
-api.add_resource(UserAccountChange, "/acc_change/<string:username>")
+api.add_resource(UserAccountChange, "/acc_change")
 api.add_resource(User, "/user/<int:user_id>")   # endpoint for testing
 api.add_resource(UserRegisterAdmin, "/register_admin")   # endpoint for testing
 
-api.add_resource(Agency, "/agency/<string:name>")
-api.add_resource(AgencyList, "/agencies")
-
-api.add_resource(Arrangement, "/arrangement/<string:name>")
+api.add_resource(Arrangement, "/arrangement/<int:id>")
+api.add_resource(ArrangementCreate, "/arrangement_create")
+api.add_resource(ArrangementDeactivate, "/arrangement_deactivate/<int:id>")
 api.add_resource(ArrangementList, "/arrangements")
+api.add_resource(ArrangementListBasic, "/arrangements_basic")
+api.add_resource(ArrangementListByCreator, "/arrangements_by_creator")
 
 
 if __name__ == "__main__":

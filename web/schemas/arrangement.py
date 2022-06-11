@@ -1,12 +1,17 @@
 from ma import ma
+
 from models.arrangement import ArrangementModel
-from models.agency import AgencyModel
+from models.user import UserModel
 
 
-class ArrangemenSchema(ma.SQLAlchemyAutoSchema):
+class ArrangementSchema(ma.SQLAlchemyAutoSchema):    
     class Meta:
         model = ArrangementModel
-        load_only = ("agency",)
-        dump_only = ("id",)
+        ordered = True
         include_fk = True
         load_instance = True
+
+
+class ArrangementSchemaBasic(ArrangementSchema):
+    class Meta(ArrangementSchema.Meta):
+        exclude = ('nr_places_available', "description", "users_id")

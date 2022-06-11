@@ -13,21 +13,28 @@ class UserModel(db.Model):
     acc_type_requested = db.Column(db.String(50), nullable=False)
     acc_type = db.Column(db.String(50))
 
+    items = db.relationship('ArrangementModel', lazy="dynamic", backref='UserModel')
+
+
     @classmethod
     def find_by_username(cls, username: str) -> "UserModel":
         return cls.query.filter_by(username=username).first()
+
 
     @classmethod
     def find_by_email(cls, email: str) -> "UserModel":
         return cls.query.filter_by(email=email).first()
 
+
     @classmethod
     def find_by_id(cls, _id: int) -> "UserModel":
         return cls.query.filter_by(id=_id).first()
 
+
     def save_to_db(self) -> None:
         db.session.add(self)
         db.session.commit()
+
 
     def delete_from_db(self) -> None:
         db.session.delete(self)

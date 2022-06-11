@@ -1,6 +1,7 @@
 from typing import List
 from requests import Response, post
 
+
 FAILED_LOAD_API_KEY = "Failed to load Mailgun API key."
 FAILED_LOAD_DOMAIN = "Failed to load Mailgun domain."
 ERROR_SENDING_EMAIL = "Error in sending email."
@@ -14,9 +15,9 @@ class MailGunException(Exception):
 class Mailgun:
     MAILGUN_API_KEY = "4626f9437f08a8afd18885cdfc685b84-523596d9-6927e3db"
     MAILGUN_DOMAIN = "sandbox0a208a4ab1c347a980f0b30250a6ef1e.mailgun.org"
-
     FROM_TITLE = "RBT Travel Agency"
     FROM_EMAIL = f"do-not-reply@{MAILGUN_DOMAIN}"
+
 
     @classmethod
     def send_email(cls, email: List[str], subject: str, html: str) -> Response:
