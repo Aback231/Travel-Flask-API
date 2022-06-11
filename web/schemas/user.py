@@ -2,10 +2,13 @@ from ma import ma
 from models.user import UserModel
 from models.arrangement import ArrangementModel
 from schemas.arrangement import ArrangementSchema
+from models.reservation import ReservationModel
+from schemas.reservation import ReservationSchema
 
 
 class UserSchema(ma.SQLAlchemyAutoSchema):
     users_id = ma.Nested(ArrangementSchema, many=True)
+    """ arrangements_id = ma.Nested(ReservationSchema, many=True) """
     class Meta:
         model = UserModel
         ordered = True

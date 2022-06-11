@@ -17,11 +17,11 @@ from resources.user import (
     UserRegisterAdmin,
 )
 from resources.arrangement import Arrangement, ArrangementList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
-
+from resources.reservation import ReservationCreate, ReservationListBasic
 
 app = Flask(__name__)
-#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.db"    # Local Sqlite for quick testing
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
+#app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.db"    # Local Sqlite for quick testing
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_BLACKLIST_ENABLED'] = True
@@ -65,6 +65,9 @@ api.add_resource(ArrangementDeactivate, "/arrangement_deactivate/<int:id>")
 api.add_resource(ArrangementList, "/arrangements")
 api.add_resource(ArrangementListBasic, "/arrangements_basic")
 api.add_resource(ArrangementListByCreator, "/arrangements_by_creator")
+
+api.add_resource(ReservationCreate, "/reservation_create")
+api.add_resource(ReservationListBasic, "/reservations_basic")
 
 
 if __name__ == "__main__":

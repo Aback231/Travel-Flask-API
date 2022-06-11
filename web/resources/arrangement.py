@@ -25,58 +25,6 @@ arrangement_list_schema = ArrangementSchema(many=True)
 arrangement_list_schema_basic = ArrangementSchemaBasic(many=True)
 
 
-class Arrangement(Resource):
-    """ Create Arrangement """
-    """ @classmethod
-    def get(cls, destination: str):
-        arrangement = ArrangementModel.find_by_name(destination)
-        if arrangement:
-            return arrangement_schema.dump(arrangement), 200
-        return {"message": ARRANGEMENT_NOT_FOUND}, 404 """
-
-
-    ## FIND ARRANGEMENTS CREATED BY USER BY ID
-    """ @classmethod
-    @jwt_required()
-    def get(cls, user_id: int):
-        arrangement = ArrangementModel.find_by_id(user_id)
-        if arrangement:
-            return arrangement_schema.dump(arrangement), 200
-        return {"message": ARRANGEMENT_NOT_FOUND}, 404 """
-
-
-    """ @classmethod
-    @jwt_required()
-    def post(cls, name: str):
-        if ArrangementModel.find_by_name(name):
-            return {"message": NAME_ALREADY_EXISTS.format(name)}, 400
-
-        arrangement_json = request.get_json()
-        arrangement = arrangement_schema.load(arrangement_json)
-
-        try:
-            arrangement.save_to_db()
-        except:
-            return {"message": ERROR_INSERTING}, 500
-
-        return arrangement_schema.dump(arrangement), 201 """
-
-
-    """ Delete Arrangement """
-    """ @classmethod
-    @jwt_required()
-    def delete(cls, name: str):
-        arrangement = ArrangementModel.find_by_name(name)
-        if arrangement:
-            arrangement.delete_from_db()
-            return {"message": ARRANGEMENT_DELETED}, 200
-        return {"message": ARRANGEMENT_NOT_FOUND}, 404 """
-
-
-
-
-
-
 class ArrangementCreate(Resource):
     """ Arangement creation by Admin account type """
     @classmethod
@@ -95,6 +43,7 @@ class ArrangementCreate(Resource):
         return {"message": ARRANGEMENT_CREATION_SUCCESS}, 201
 
 
+############ FORGOT TO SEND AN EMAIL TO ALL USERS #########################
 class ArrangementDeactivate(Resource):
     """ Admin can deactivate an Arrangement at latest 5 days before it starts """
     @classmethod
@@ -103,7 +52,7 @@ class ArrangementDeactivate(Resource):
     def put(cls, id: int):
         arrangement = ArrangementModel.find_by_id(id)
 
-        if not date_parser.has_arrangement_5_days_to_start(arrangement.date_start):
+        if not date_parser.is_arrangement_reservable(arrangement.date_start):
             return {"message": ARRANGEMENT_TIME_TO_START_ERROR}, 400
         
         if not arrangement.is_active:

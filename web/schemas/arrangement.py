@@ -2,9 +2,10 @@ from ma import ma
 
 from models.arrangement import ArrangementModel
 from models.user import UserModel
+from models.reservation import ReservationModel
+from schemas.reservation import ReservationSchema
 
-
-class ArrangementSchema(ma.SQLAlchemyAutoSchema):    
+class ArrangementSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ArrangementModel
         ordered = True
