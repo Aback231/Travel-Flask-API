@@ -16,8 +16,8 @@ from resources.user import (
     User,
     UserRegisterAdmin,
 )
-from resources.arrangement import Arrangement, ArrangementList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
-from resources.reservation import ReservationCreate, ReservationListBasic
+from resources.arrangement import Arrangement, ArrangementList, ArrangementReservationsList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
+from resources.reservation import ReservationCreate, ReservationListPerUser, ReservationListBasic
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
@@ -63,10 +63,12 @@ api.add_resource(Arrangement, "/arrangement/<int:id>")
 api.add_resource(ArrangementCreate, "/arrangement_create")
 api.add_resource(ArrangementDeactivate, "/arrangement_deactivate/<int:id>")
 api.add_resource(ArrangementList, "/arrangements")
+api.add_resource(ArrangementReservationsList, "/reserved_arrangements")
 api.add_resource(ArrangementListBasic, "/arrangements_basic")
 api.add_resource(ArrangementListByCreator, "/arrangements_by_creator")
 
 api.add_resource(ReservationCreate, "/reservation_create")
+api.add_resource(ReservationListPerUser, "/reservations")
 api.add_resource(ReservationListBasic, "/reservations_basic")
 
 

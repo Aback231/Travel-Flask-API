@@ -7,14 +7,17 @@ class ReservationModel(db.Model):
     __tablename__ = "reservations"
 
     id = db.Column(db.Integer, primary_key=True)
-    reserver_user_id = db.Column(db.Integer, unique=False)
-    arrangement_id = db.Column(db.Integer, nullable=False, unique=False)
-    num_reservations = db.Column(db.Integer, nullable=False, unique=False)
 
+    reserver_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    arrangement_id = db.Column(db.Integer, db.ForeignKey("arrangements.id"))
+
+    num_reservations = db.Column(db.Integer, unique=False)
+
+    user = db.relationship("UserModel", backref="reservations")
 
     @classmethod
-    def find_by_id(cls, id: int) -> "ReservationModel":
-        return cls.query.filter_by(id=id).first()
+    def find_by_id(cls, reserver_user_id: int) -> List["ReservationModel"]:
+        return cls.query.filter_by(reserver_user_id=reserver_user_id)
 
 
     @classmethod

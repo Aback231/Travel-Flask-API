@@ -1,5 +1,8 @@
 from db import db
 
+from models.reservation import ReservationModel
+from models.arrangement import ArrangementModel
+
 
 class UserModel(db.Model):
     __tablename__ = "users"
@@ -13,7 +16,9 @@ class UserModel(db.Model):
     acc_type_requested = db.Column(db.String(50), nullable=False)
     acc_type = db.Column(db.String(50))
 
-    items = db.relationship('ArrangementModel', lazy="dynamic", backref='UserModel')
+    items = db.relationship('ArrangementModel', lazy="dynamic", backref='item')
+
+    arrangements_reservations = db.relationship("ArrangementModel", secondary="reservations", overlaps="reservations,user")
 
 
     @classmethod

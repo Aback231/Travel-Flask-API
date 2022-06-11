@@ -15,9 +15,9 @@ from flask_jwt_extended import (
 from models.user import UserModel
 from schemas.user import UserSchema, LogInSchema
 from blacklist import BLACKLIST
-from libs.mailgun import MailGunException
 from decorators.roles import roles
 from helpers.user_roles import UserRoles
+from libs.mailgun import MailGunException
 from libs.mailgun import Mailgun
 
 USER_ALREADY_EXISTS = "A user with that username already exists."
@@ -33,6 +33,7 @@ PASSWORD_CONFIRMATION = "Passwords confirmation is required!"
 USER_ACC_CHANGED = ("User Account type changed successfully from <{}> to <{}>.")
 USER_ACC_CHANGED_ALREADY = ("User Account type was already changed.")
 USER_ACC_CHANGE_VALIDATION = "JSON parameters username and is_approved are required"
+USER_ACC_CHANGE_FAILED = "User Account type changed failed."
 MAILGUN_SUBJECT_ACC_CHANGE = "Account type change confirmation"
 MAILGUN_SUBJECT_REGISTER = "Registration Confirmation"
 MAILGUN_HTML_ACC_CHANGE_SUCCESS = ("<html>Account type change from <b>{}</b> to <b>{}</b> successful.</html>")
@@ -61,14 +62,14 @@ class UserRegister(Resource):
         if UserModel.find_by_email(user.email):
             return {"message": EMAIL_ALREADY_EXISTS}, 400
 
-        # Validate password confirmation
+        """ Validate password confirmation """
         if "password_confirmation" not in user_json.keys():
             return {"message": PASSWORD_CONFIRMATION}, 400
         if not safe_str_cmp(user.password, user_json["password_confirmation"]):
             return {"message": PASSWORD_MISMATCH}, 400
 
         try:
-            # Encrypt password for DB storing
+            """ Encrypt password for DB storing """
             user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt())
             user.acc_type = UserRoles.DEFAULT_ROLE.value
             user.save_to_db()
@@ -76,7 +77,7 @@ class UserRegister(Resource):
             return {"message": REGISTER_SUCCESS_MESSAGE}, 201
         except MailGunException as e:
             return {"message": str(e)}, 500
-        except:  # failed to save user to db
+        except:
             traceback.print_exc()
             return {"message": FAILED_TO_CREATE}, 500
 
@@ -88,7 +89,7 @@ class UserLogin(Resource):
         user_json = request.get_json()
         user_data = login_schema.load(user_json, partial=("email",))
 
-        user = UserModel.find_by_username(user_data.username)
+        user = UserModel.find_by_username(user_data.username)        
 
         # Hash provided pass and compare to the one stored in DB for givrn UserName
         if user and safe_str_cmp(bcrypt.hashpw(user_data.password.encode('utf8'), user.password), user.password):
@@ -167,21 +168,25 @@ class UserAccountChange(Resource):
             return {"message": USER_NOT_FOUND}, 404
 
         # Request rejected, set acc_type_requested to current acc_type
-        if not is_approved:
-            user.acc_type_requested = user.acc_type
+        try:
+            if not is_approved:
+                user.acc_type_requested = user.acc_type
+                user.save_to_db()
+
+                Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE_DENIED.format(user.acc_type_requested, acc_type_requested_old, rejection_comment))
+                return {"message": USER_ACC_CHANGE_REQUEST_DENIED}, 200
+
+            # Request approved, set current acc_type to acc_type_requested
+            user.acc_type = user.acc_type_requested
             user.save_to_db()
 
-            Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE_DENIED.format(user.acc_type_requested, acc_type_requested_old, rejection_comment))
-
-            return {"message": USER_ACC_CHANGE_REQUEST_DENIED}, 200
-
-        # Request approved, set current acc_type to acc_type_requested
-        user.acc_type = user.acc_type_requested
-        user.save_to_db()
-
-        Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE_SUCCESS.format(acc_type_old, user.acc_type_requested))
-
-        return {"message": USER_ACC_CHANGED.format(acc_type_old, user.acc_type_requested)}, 200
+            Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE_SUCCESS.format(acc_type_old, user.acc_type_requested))
+            return {"message": USER_ACC_CHANGED.format(acc_type_old, user.acc_type_requested)}, 200
+        except MailGunException as e:
+            return {"message": str(e)}, 500
+        except:
+            traceback.print_exc()
+            return {"message": USER_ACC_CHANGE_FAILED}, 500
 
 
 ############################## Only for testing purposes ##############################

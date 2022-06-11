@@ -5,6 +5,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from helpers import date_parser
 from models.arrangement import ArrangementModel
 from schemas.arrangement import ArrangementSchema, ArrangementSchemaBasic
+from models.user import UserModel
 from decorators.roles import roles
 from helpers.user_roles import UserRoles
 
@@ -43,7 +44,7 @@ class ArrangementCreate(Resource):
         return {"message": ARRANGEMENT_CREATION_SUCCESS}, 201
 
 
-############ FORGOT TO SEND AN EMAIL TO ALL USERS #########################
+############ FORGOT TO SEND AN EMAIL TO ALL USERS LIST #########################
 class ArrangementDeactivate(Resource):
     """ Admin can deactivate an Arrangement at latest 5 days before it starts """
     @classmethod
@@ -64,11 +65,20 @@ class ArrangementDeactivate(Resource):
         return {"message": ARRANGEMENT_DEACTIVATED_SECCESS}, 200
 
 
+class ArrangementReservationsList(Resource):
+    """ Get Detailed List of all Reserved Arrangements, login required """
+    @classmethod
+    @jwt_required()
+    def get(cls):
+        user = UserModel.find_by_id(get_jwt_identity())
+        return {"reserved_arrangements": arrangement_list_schema.dump(user.arrangements_reservations)}, 200
+
+
 class ArrangementListBasic(Resource):
     """ Get Basic List of all Arrangements, no need for login """
     @classmethod
     def get(cls):
-        return {"items": arrangement_list_schema_basic.dump(ArrangementModel.find_all())}, 200
+        return {"arrangement_list": arrangement_list_schema_basic.dump(ArrangementModel.find_all())}, 200
 
 
 class ArrangementList(Resource):
@@ -76,7 +86,7 @@ class ArrangementList(Resource):
     @classmethod
     @jwt_required()
     def get(cls):
-        return {"items": arrangement_list_schema.dump(ArrangementModel.find_all())}, 200
+        return {"arrangement_list": arrangement_list_schema.dump(ArrangementModel.find_all())}, 200
 
 
 class ArrangementListByCreator(Resource):
@@ -85,4 +95,4 @@ class ArrangementListByCreator(Resource):
     @jwt_required()
     @roles.role_auth([UserRoles.ADMIN.value])
     def get(cls):
-        return {"items": arrangement_list_schema.dump(ArrangementModel.find_all_by_creator_id(get_jwt_identity()))}, 200
+        return {"arrangement_list": arrangement_list_schema.dump(ArrangementModel.find_all_by_creator_id(get_jwt_identity()))}, 200

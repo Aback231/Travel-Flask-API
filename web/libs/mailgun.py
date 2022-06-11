@@ -4,7 +4,7 @@ from requests import Response, post
 
 FAILED_LOAD_API_KEY = "Failed to load Mailgun API key."
 FAILED_LOAD_DOMAIN = "Failed to load Mailgun domain."
-ERROR_SENDING_EMAIL = "Error in sending email."
+ERROR_SENDING_EMAIL = ("Error in sending email {}.")
 
 
 class MailGunException(Exception):
@@ -38,7 +38,7 @@ class Mailgun:
             },
         )
 
-        if response.status_code != 200:
-            raise MailGunException(ERROR_SENDING_EMAIL)
+        if response.status_code not in [200, 403]:
+            raise MailGunException(ERROR_SENDING_EMAIL.format(response.status_code))
 
         return response
