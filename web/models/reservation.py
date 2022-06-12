@@ -14,6 +14,7 @@ class ReservationModel(db.Model):
     num_reservations = db.Column(db.Integer, unique=False)
 
     user = db.relationship("UserModel", backref="reservations")
+    arrangement = db.relationship("ArrangementModel", backref="reservations")
 
     @classmethod
     def find_by_id(cls, reserver_user_id: int) -> List["ReservationModel"]:
@@ -23,11 +24,6 @@ class ReservationModel(db.Model):
     @classmethod
     def find_by_arrangement_id_and_reserver_user_id(cls, arrangement_id: int, reserver_user_id: int) -> "ReservationModel":
         return cls.query.filter_by(arrangement_id=arrangement_id, reserver_user_id=reserver_user_id).first()
-
-
-    @classmethod
-    def find_all(cls) -> List["ReservationModel"]:
-        return cls.query.all()
 
 
     def save_to_db(self) -> None:

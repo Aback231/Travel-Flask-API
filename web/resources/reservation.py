@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from helpers import date_parser
 from libs.mailgun import MailGunException
 from libs.mailgun import Mailgun
+from libs.pagination_and_sorting import paginate_and_sort
 from models.reservation import ReservationModel
 from schemas.reservation import ReservationSchema
 from models.arrangement import ArrangementModel
@@ -110,11 +111,13 @@ class ReservationListPerUser(Resource):
     @classmethod
     @jwt_required()
     def get(cls):
-        return {"reservations": reservation_list_schema.dump(ReservationModel.find_by_id(get_jwt_identity()))}, 200
+        return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservations", {"id": get_jwt_identity()})
 
 
 class ReservationListBasic(Resource):
-    """ Get Basic List of all Arrangements, no need for login """
+    """ Get list of all reservations in reservation table """
     @classmethod
+    @jwt_required()
+    @roles.role_auth([UserRoles.ADMIN.value])
     def get(cls):
-        return {"items": reservation_list_schema.dump(ReservationModel.find_all())}, 200
+        return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservation_items")

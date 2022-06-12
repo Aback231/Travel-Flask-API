@@ -15,8 +15,11 @@ from resources.user import (
     UserAccountChange,
     User,
     UserRegisterAdmin,
+    UserProfileView,
+    UserProfileUpdate,
+    ListAccountChangeRequests,
 )
-from resources.arrangement import Arrangement, ArrangementList, ArrangementReservationsList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
+from resources.arrangement import ArrangementUpdate, ArrangementList, ArrangementReservationsList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
 from resources.reservation import ReservationCreate, ReservationListPerUser, ReservationListBasic
 
 app = Flask(__name__)
@@ -54,22 +57,25 @@ api.add_resource(UserRegister, "/register")
 api.add_resource(UserLogin, "/login")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
+api.add_resource(UserProfileView, "/user_profile_view")
+api.add_resource(UserProfileUpdate, "/user_profile_update")
 api.add_resource(UserAccountChangeRequest, "/acc_change_request")
 api.add_resource(UserAccountChange, "/acc_change")
+api.add_resource(ListAccountChangeRequests, "/list_acc_change_requests")
 api.add_resource(User, "/user/<int:user_id>")   # endpoint for testing
 api.add_resource(UserRegisterAdmin, "/register_admin")   # endpoint for testing
 
-api.add_resource(Arrangement, "/arrangement/<int:id>")
 api.add_resource(ArrangementCreate, "/arrangement_create")
+api.add_resource(ArrangementUpdate, "/arrangement_update")
 api.add_resource(ArrangementDeactivate, "/arrangement_deactivate/<int:id>")
-api.add_resource(ArrangementList, "/arrangements")
-api.add_resource(ArrangementReservationsList, "/reserved_arrangements")
-api.add_resource(ArrangementListBasic, "/arrangements_basic")
-api.add_resource(ArrangementListByCreator, "/arrangements_by_creator")
+api.add_resource(ArrangementReservationsList, "/reserved_arrangements/<int:reverse>")
+api.add_resource(ArrangementList, "/arrangements/")
+api.add_resource(ArrangementListBasic, "/arrangements_basic/")
+api.add_resource(ArrangementListByCreator, "/arrangements_by_creator/")
 
 api.add_resource(ReservationCreate, "/reservation_create")
 api.add_resource(ReservationListPerUser, "/reservations")
-api.add_resource(ReservationListBasic, "/reservations_basic")
+api.add_resource(ReservationListBasic, "/reservations_basic/")
 
 
 if __name__ == "__main__":

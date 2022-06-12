@@ -1,3 +1,6 @@
+from typing import List
+
+from sqlalchemy import or_
 from db import db
 
 from models.reservation import ReservationModel
@@ -18,7 +21,7 @@ class UserModel(db.Model):
 
     items = db.relationship('ArrangementModel', lazy="dynamic", backref='item')
 
-    arrangements_reservations = db.relationship("ArrangementModel", secondary="reservations", overlaps="reservations,user")
+    arrangements_reservations = db.relationship("ArrangementModel", secondary="reservations", overlaps="user_reservations,reservations,user,arrangement")
 
 
     @classmethod
@@ -32,8 +35,13 @@ class UserModel(db.Model):
 
 
     @classmethod
-    def find_by_id(cls, _id: int) -> "UserModel":
-        return cls.query.filter_by(id=_id).first()
+    def find_by_id(cls, id: int) -> "UserModel":
+        return cls.query.filter_by(id=id).first()
+
+
+    @classmethod
+    def find_by_acc_type(cls, acc_type: int) -> List["UserModel"]:
+        return cls.query.filter_by(acc_type=acc_type)
 
 
     def save_to_db(self) -> None:

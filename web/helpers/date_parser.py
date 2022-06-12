@@ -1,6 +1,7 @@
 import datetime
 from dateutil import parser
 
+
 ARRANGEMENT_DAYS_UNTIL_START = 5
 
 

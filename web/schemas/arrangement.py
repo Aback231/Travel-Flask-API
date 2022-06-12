@@ -1,12 +1,15 @@
 from ma import ma
+from db import db
 
 from models.arrangement import ArrangementModel
 from models.user import UserModel
 from models.reservation import ReservationModel
 from schemas.reservation import ReservationSchema
 
+
 class ArrangementSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
+        sqla_session = db.session
         model = ArrangementModel
         ordered = True
         include_fk = True

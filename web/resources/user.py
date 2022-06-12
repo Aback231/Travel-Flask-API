@@ -13,12 +13,14 @@ from flask_jwt_extended import (
 )
 
 from models.user import UserModel
-from schemas.user import UserSchema, LogInSchema
+from schemas.user import UserSchema, LogInSchema, ProfileSchema
 from blacklist import BLACKLIST
 from decorators.roles import roles
 from helpers.user_roles import UserRoles
 from libs.mailgun import MailGunException
 from libs.mailgun import Mailgun
+from libs.pagination_and_sorting import paginate_and_sort
+
 
 USER_ALREADY_EXISTS = "A user with that username already exists."
 EMAIL_ALREADY_EXISTS = "A user with that email already exists."
@@ -43,10 +45,13 @@ USER_ACC_CHANGE_REQUEST_VALIDATION = "JSON parameter acc_type_requested is requi
 USER_ACC_CHANGE_REQUEST_SUCCESS = ("Account type change request to {} successful.")
 USER_ACC_CHANGE_REQUEST_DENIED = "Account type change request was denied."
 USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION = ("Only <{}> and <{}> account types are allowed as acc_type_requested JSON parameters!")
-
+USER_ID_PARAM = "User <id> is required JSON parameter."
+USER_PROFILE_UPDATE_SUCCESS = "User profile successfully updated."
 
 user_schema = UserSchema(unknown=INCLUDE)
+user_list_schema = UserSchema(many=True)
 login_schema = LogInSchema()
+user_profile_schema = ProfileSchema(unknown=INCLUDE)
 
 
 class UserRegister(Resource):
@@ -113,14 +118,30 @@ class UserLogout(Resource):
         return {"message": USER_LOGGED_OUT}, 200
 
 
-class TokenRefresh(Resource):
-    """ Request Fresh Token  """
+class ListAccountChangeRequests(Resource):
+    """ ADMIN can list all users who requested account change. """
     @classmethod
-    @jwt_required(refresh=True)
+    @jwt_required()
+    @roles.role_auth([UserRoles.ADMIN.value])
     def post(cls):
-        current_user = get_jwt_identity()
-        new_token = create_access_token(identity=current_user, fresh=False)
-        return {"access_token": new_token}, 200
+        tourist_users = UserModel.find_by_acc_type(UserRoles.TOURIST.value)
+        tourist_users_filtered = []
+        for item in tourist_users:
+            if not safe_str_cmp(item.acc_type_requested, item.acc_type):
+                tourist_users_filtered.append(item)
+
+        travel_guide_users = UserModel.find_by_acc_type(UserRoles.TRAVEL_GUIDE.value)
+        travel_guide_users_filtered = []
+        for item in travel_guide_users:
+            if not safe_str_cmp(item.acc_type_requested, item.acc_type):
+                travel_guide_users_filtered.append(item)
+
+        filtered_users = {
+            "tourist_users": user_list_schema.dump(tourist_users_filtered),
+            "travel_guide_users": user_list_schema.dump(travel_guide_users_filtered)
+        }
+        
+        return {"list_acc_change_requests": filtered_users}, 200
 
 
 class UserAccountChangeRequest(Resource):
@@ -187,6 +208,52 @@ class UserAccountChange(Resource):
         except:
             traceback.print_exc()
             return {"message": USER_ACC_CHANGE_FAILED}, 500
+
+
+class UserProfileView(Resource):
+    """ TOURIST can view their profile. """
+    @classmethod
+    @jwt_required()
+    @roles.role_auth([UserRoles.TOURIST.value])
+    def post(cls):
+        user = UserModel.find_by_id(get_jwt_identity())
+        return {"user_profile": user_schema.dump(user)}, 200
+
+
+class UserProfileUpdate(Resource):
+    """ TOURIST can update their profile. """
+    @classmethod
+    @jwt_required()
+    @roles.role_auth([UserRoles.TOURIST.value])
+    def post(cls):
+        user_json = request.get_json()
+        user_profile_schema.load(user_json)
+
+        if "id" not in user_json.keys():
+            return {"message": USER_ID_PARAM}, 400
+        
+        arrangement = UserModel.find_by_id(user_json["id"])
+
+        if not arrangement:
+            return {"message": USER_NOT_FOUND}, 400
+
+        for key in user_json:
+            if not safe_str_cmp(key, "id"):
+                arrangement.__setattr__(key, user_json[key])
+
+        arrangement.save_to_db()
+
+        return {"message": USER_PROFILE_UPDATE_SUCCESS}, 201
+
+
+class TokenRefresh(Resource):
+    """ Request Fresh Token  """
+    @classmethod
+    @jwt_required(refresh=True)
+    def post(cls):
+        current_user = get_jwt_identity()
+        new_token = create_access_token(identity=current_user, fresh=False)
+        return {"access_token": new_token}, 200
 
 
 ############################## Only for testing purposes ##############################

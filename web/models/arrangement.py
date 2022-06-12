@@ -17,6 +17,9 @@ class ArrangementModel(db.Model):
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
+    ## If you use backref you don't need to declare the relationship on the second table !!!
+    user_reservations = db.relationship("UserModel", secondary="reservations", overlaps="user_reservations,reservations,user,arrangement")
+
 
     @classmethod
     def find_by_name(cls, destination: str) -> "ArrangementModel":
@@ -36,11 +39,6 @@ class ArrangementModel(db.Model):
     @classmethod
     def find_all(cls) -> List["ArrangementModel"]:
         return cls.query.all()
-
-
-    @classmethod
-    def find_all_by_creator_id(cls, _users_id: int) -> List["ArrangementModel"]:
-        return cls.query.filter_by(users_id=_users_id)
 
 
     def save_to_db(self) -> None:
