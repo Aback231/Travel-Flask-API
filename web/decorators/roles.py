@@ -1,3 +1,4 @@
+from constants.http_status_codes import HTTP_403_FORBIDDEN
 from functools import wraps
 from typing import List
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
@@ -19,6 +20,6 @@ class roles():
                 if claims["acc_type"] in acc_type:
                     return fn(*args, **kwargs)
                 else:
-                    return {"message": ROLES_ERROR.format(acc_type)}, 403
+                    return {"message": ROLES_ERROR.format(acc_type)}, HTTP_403_FORBIDDEN
             return decorator
         return wrapper

@@ -7,3 +7,5 @@ psycopg2-binary
 bcrypt
 flask_marshmallow
 marshmallow-sqlalchemy
+requests
+python-dateutil

@@ -10,11 +10,11 @@ class ReservationModel(db.Model):
 
     reserver_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     arrangement_id = db.Column(db.Integer, db.ForeignKey("arrangements.id"))
-
     num_reservations = db.Column(db.Integer, unique=False)
 
     user = db.relationship("UserModel", backref="reservations")
     arrangement = db.relationship("ArrangementModel", backref="reservations")
+
 
     @classmethod
     def find_by_id(cls, reserver_user_id: int) -> List["ReservationModel"]:

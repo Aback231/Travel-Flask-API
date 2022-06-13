@@ -14,10 +14,10 @@ class ArrangementModel(db.Model):
     nr_places_available = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(1000), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    tour_guide_id = db.Column(db.Integer)
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    ## If you use backref you don't need to declare the relationship on the second table !!!
     user_reservations = db.relationship("UserModel", secondary="reservations", overlaps="user_reservations,reservations,user,arrangement")
 
 
@@ -34,6 +34,11 @@ class ArrangementModel(db.Model):
     @classmethod
     def find_by_description(cls, description: str) -> "ArrangementModel":
         return cls.query.filter_by(description=description).first()
+
+
+    @classmethod
+    def find_all_by_tour_guide_id(cls, tour_guide_id: int) -> List["ArrangementModel"]:
+        return cls.query.filter_by(tour_guide_id=tour_guide_id)
 
 
     @classmethod

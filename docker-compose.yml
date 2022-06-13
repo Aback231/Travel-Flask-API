@@ -5,8 +5,6 @@ services:
     container_name: web
     ports:
       - "5000:5000"
-    volumes:
-      "/web:/usr/src/app"
     links:
       - db
   db:

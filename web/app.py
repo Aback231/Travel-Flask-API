@@ -3,6 +3,7 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from marshmallow import ValidationError
 
+from constants.http_status_codes import HTTP_400_BAD_REQUEST
 from db import db
 from ma import ma
 from blacklist import BLACKLIST
@@ -16,11 +17,28 @@ from resources.user import (
     User,
     UserRegisterAdmin,
     UserProfileView,
+    UserProfileList,
     UserProfileUpdate,
     ListAccountChangeRequests,
 )
-from resources.arrangement import ArrangementUpdate, ArrangementList, ArrangementReservationsList, ArrangementListBasic, ArrangementListByCreator, ArrangementCreate, ArrangementDeactivate
-from resources.reservation import ReservationCreate, ReservationListPerUser, ReservationListBasic
+from resources.arrangement import (
+    UpdateArrangement,
+    DetailedListArrangement,
+    ReservationsListArrangement,
+    BasicListArrangement,
+    ListByCreatorArrangement,
+    CreateArrangement,
+    DeactivateArrangement,
+    ListByDestinationOrTimeArrangement,
+    PickTourGuideArrangement,
+    DetailedListTourGuideArrangement,
+)
+from resources.reservation import (
+    CreateReservation,
+    ListPerUserReservation,
+    BasicListReservation
+)
+  
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/db"  # PostgreDB
@@ -43,7 +61,7 @@ def create_tables():
 
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation(err):
-    return jsonify(err.messages), 400
+    return jsonify(err.messages), HTTP_400_BAD_REQUEST
 
 jwt = JWTManager(app)
 
@@ -58,6 +76,7 @@ api.add_resource(UserLogin, "/login")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
 api.add_resource(UserProfileView, "/user_profile_view")
+api.add_resource(UserProfileList, "/user_profile_list/")
 api.add_resource(UserProfileUpdate, "/user_profile_update")
 api.add_resource(UserAccountChangeRequest, "/acc_change_request")
 api.add_resource(UserAccountChange, "/acc_change")
@@ -65,17 +84,20 @@ api.add_resource(ListAccountChangeRequests, "/list_acc_change_requests")
 api.add_resource(User, "/user/<int:user_id>")   # endpoint for testing
 api.add_resource(UserRegisterAdmin, "/register_admin")   # endpoint for testing
 
-api.add_resource(ArrangementCreate, "/arrangement_create")
-api.add_resource(ArrangementUpdate, "/arrangement_update")
-api.add_resource(ArrangementDeactivate, "/arrangement_deactivate/<int:id>")
-api.add_resource(ArrangementReservationsList, "/reserved_arrangements/<int:reverse>")
-api.add_resource(ArrangementList, "/arrangements/")
-api.add_resource(ArrangementListBasic, "/arrangements_basic/")
-api.add_resource(ArrangementListByCreator, "/arrangements_by_creator/")
+api.add_resource(CreateArrangement, "/arrangement_create")
+api.add_resource(UpdateArrangement, "/arrangement_update")
+api.add_resource(DeactivateArrangement, "/arrangement_deactivate/<int:id>")
+api.add_resource(ReservationsListArrangement, "/reserved_arrangements/<int:reverse>")
+api.add_resource(PickTourGuideArrangement, "/pick_tour_guide/")
+api.add_resource(DetailedListArrangement, "/arrangements/")
+api.add_resource(BasicListArrangement, "/arrangements_basic/")
+api.add_resource(ListByDestinationOrTimeArrangement, "/arrangements_dest_time/<string:key>/<string:value>")
+api.add_resource(ListByCreatorArrangement, "/arrangements_by_creator/")
+api.add_resource(DetailedListTourGuideArrangement, "/arrangements_by_tour_guide_booking/")
 
-api.add_resource(ReservationCreate, "/reservation_create")
-api.add_resource(ReservationListPerUser, "/reservations")
-api.add_resource(ReservationListBasic, "/reservations_basic/")
+api.add_resource(CreateReservation, "/reservation_create")
+api.add_resource(ListPerUserReservation, "/reservations")
+api.add_resource(BasicListReservation, "/reservations_basic/")
 
 
 if __name__ == "__main__":

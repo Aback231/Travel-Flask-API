@@ -3,17 +3,16 @@ from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
-from helpers import date_parser
-from libs.mailgun import MailGunException
-from libs.mailgun import Mailgun
-from libs.pagination_and_sorting import paginate_and_sort
+from constants.http_status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_500_INTERNAL_SERVER_ERROR
+from helpers import date_parser, price_parser
+from libs.mailgun import Mailgun, MailGunException
+from helpers.pagination_and_sorting import paginate_and_sort
 from models.reservation import ReservationModel
 from schemas.reservation import ReservationSchema
 from models.arrangement import ArrangementModel
 from models.user import UserModel
 from decorators.roles import roles
-from helpers.user_roles import UserRoles
-
+from constants.user_roles import UserRoles
 from db import db
 
 
@@ -30,23 +29,11 @@ MAILGUN_HTML_RESERVATION_FAIL = "<html>Reservation failed, requested arrangement
 MAILGUN_HTML_RESERVATION_FAIL_NO_PLACES = "<html>Reservation failed, no available places left</html>"
 
 
-DISCOUNT_RESERVATIONS_TRESHOLD = 3
-DISCOUNT_PERCENTAGE = 10
-
-
 reservation_schema = ReservationSchema()
 reservation_list_schema = ReservationSchema(many=True)
 
 
-def price_calculation(nr_reservations: int, price: float) -> float:
-    """ Calculate price sum with discount for arrangement reservation """
-    price_sum = nr_reservations * price
-    if nr_reservations > DISCOUNT_RESERVATIONS_TRESHOLD:
-        price_sum = price_sum - (nr_reservations - DISCOUNT_RESERVATIONS_TRESHOLD) * (price * DISCOUNT_PERCENTAGE/100)
-    return price_sum
-
-
-class ReservationCreate(Resource):
+class CreateReservation(Resource):
     """ TOURIST Arrangement reservation. If arrangement and reservation for given arrangement ID and current user ID 
         exist, reservation and arrangement availability will be updated if enough places exist """
     @classmethod
@@ -64,12 +51,12 @@ class ReservationCreate(Resource):
         try:
             if not arrangement:
                 Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_FAIL)
-                return {"message": RESERVATION_CREATION_FAIL}, 400
+                return {"message": RESERVATION_CREATION_FAIL}, HTTP_400_BAD_REQUEST
 
             if not date_parser.is_arrangement_reservable(arrangement.date_start):
-                return {"message": ARRANGEMENT_TIME_TO_START_ERROR}, 400
+                return {"message": ARRANGEMENT_TIME_TO_START_ERROR}, HTTP_400_BAD_REQUEST
             
-            """ Update reservation places for arrangement and user reservation. """
+            # Update reservation places for arrangement and user reservation.
             if reservation_query:
                 arrangement_places_left = arrangement.nr_places_available - reservation.num_reservations
                 if arrangement_places_left >= 0:
@@ -78,13 +65,13 @@ class ReservationCreate(Resource):
                     arrangement.nr_places_available = arrangement_places_left
                     arrangement.save_to_db()
 
-                    Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_SUCCESS.format(price_calculation(reservation.num_reservations, arrangement.price)))
-                    return {"message": RESERVATION_UPDATED}, 200
+                    Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_SUCCESS.format(price_parser.price_calculation(reservation.num_reservations, arrangement.price)))
+                    return {"message": RESERVATION_UPDATED}, HTTP_200_OK
 
                 Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_FAIL_NO_PLACES)
-                return {"message": RESERVATION_CREATION_FAIL_NO_PLACES}, 400
+                return {"message": RESERVATION_CREATION_FAIL_NO_PLACES}, HTTP_400_BAD_REQUEST
 
-            """ Create new reservation for user and deduct reservation places.  """
+            # Create new reservation for user and deduct reservation places.
             arrangement_places_left = arrangement.nr_places_available - reservation.num_reservations
 
             if arrangement_places_left >= 0:
@@ -94,19 +81,19 @@ class ReservationCreate(Resource):
                 reservation.reserver_user_id = get_jwt_identity()
                 reservation.save_to_db()
 
-                Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_SUCCESS.format(price_calculation(reservation.num_reservations, arrangement.price)))
-                return {"message": RESERVATION_CREATION_SUCCESS}, 201
+                Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_SUCCESS.format(price_parser.price_calculation(reservation.num_reservations, arrangement.price)))
+                return {"message": RESERVATION_CREATION_SUCCESS}, HTTP_201_CREATED
 
             Mailgun.send_email([user.email], MAILGUN_SUBJECT_RESERVATION, MAILGUN_HTML_RESERVATION_FAIL_NO_PLACES)
-            return {"message": RESERVATION_CREATION_FAIL_NO_PLACES}, 400
+            return {"message": RESERVATION_CREATION_FAIL_NO_PLACES}, HTTP_400_BAD_REQUEST
         except MailGunException as e:
-            return {"message": str(e)}, 500
+            return {"message": str(e)}, HTTP_500_INTERNAL_SERVER_ERROR
         except:
             traceback.print_exc()
-            return {"message": FAILED_TO_CREATE_RESERVATION}, 500
+            return {"message": FAILED_TO_CREATE_RESERVATION}, HTTP_500_INTERNAL_SERVER_ERROR
 
 
-class ReservationListPerUser(Resource):
+class ListPerUserReservation(Resource):
     """ Get all reservations for user by ID """
     @classmethod
     @jwt_required()
@@ -114,7 +101,7 @@ class ReservationListPerUser(Resource):
         return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservations", {"id": get_jwt_identity()})
 
 
-class ReservationListBasic(Resource):
+class BasicListReservation(Resource):
     """ Get list of all reservations in reservation table """
     @classmethod
     @jwt_required()

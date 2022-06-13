@@ -18,4 +18,4 @@ class ArrangementSchema(ma.SQLAlchemyAutoSchema):
 
 class ArrangementSchemaBasic(ArrangementSchema):
     class Meta(ArrangementSchema.Meta):
-        exclude = ('nr_places_available', "description", "users_id")
+        exclude = ('nr_places_available', "description", "users_id", "tour_guide_id")

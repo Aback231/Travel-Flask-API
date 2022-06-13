@@ -1,4 +1,6 @@
 from typing import List
+
+from constants.http_status_codes import HTTP_200_OK, HTTP_403_FORBIDDEN
 from requests import Response, post
 
 
@@ -38,7 +40,7 @@ class Mailgun:
             },
         )
 
-        if response.status_code not in [200, 403]:
+        if response.status_code not in [HTTP_200_OK, HTTP_403_FORBIDDEN]:
             raise MailGunException(ERROR_SENDING_EMAIL.format(response.status_code))
 
         return response

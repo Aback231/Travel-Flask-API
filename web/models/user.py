@@ -1,8 +1,6 @@
 from typing import List
 
-from sqlalchemy import or_
 from db import db
-
 from models.reservation import ReservationModel
 from models.arrangement import ArrangementModel
 
@@ -19,8 +17,10 @@ class UserModel(db.Model):
     acc_type_requested = db.Column(db.String(50), nullable=False)
     acc_type = db.Column(db.String(50))
 
+    # Key points to arrangements created by ADMIN user id
     items = db.relationship('ArrangementModel', lazy="dynamic", backref='item')
 
+    # Key points to arrangements reserved by TOURIST user id; many to many using reservations table
     arrangements_reservations = db.relationship("ArrangementModel", secondary="reservations", overlaps="user_reservations,reservations,user,arrangement")
 
 
