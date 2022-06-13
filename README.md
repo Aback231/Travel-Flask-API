@@ -16,10 +16,10 @@ Docker-compose is used to build all the services, and make them comunicate with 
 
 To build containers and run: `docker-compose up --build`
 
-By default flask app is running on `http://127.0.0.1:5000`
+By default flask app is running on http://127.0.0.1:5000
 
 Tested on: `Arch Linux` and `Ubuntu 21.10`
 
 ### Documentation
 
-Postman documentation was publicly pubished: `https://documenter.getpostman.com/view/21319787/Uz5KnaPh`
+Postman documentation was publicly pubished: [Postman publication](https://documenter.getpostman.com/view/21319787/Uz5KnaPh)
