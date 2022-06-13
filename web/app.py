@@ -14,7 +14,6 @@ from resources.user import (
     UserLogout,
     UserAccountChangeRequest,
     UserAccountChange,
-    User,
     UserRegisterAdmin,
     UserProfileView,
     UserProfileList,
@@ -45,8 +44,8 @@ app.config.from_prefixed_env()
 api = Api(app)
 
 # Disable both when docker-compose up
-#db.init_app(app)
-#ma.init_app(app)
+db.init_app(app)
+ma.init_app(app)
 
 # Create DB
 @app.before_first_request
@@ -76,13 +75,12 @@ api.add_resource(UserProfileUpdate, "/user_profile_update")
 api.add_resource(UserAccountChangeRequest, "/acc_change_request")
 api.add_resource(UserAccountChange, "/acc_change")
 api.add_resource(ListAccountChangeRequests, "/list_acc_change_requests")
-api.add_resource(User, "/user/<int:user_id>")   # endpoint for testing
 api.add_resource(UserRegisterAdmin, "/register_admin")   # endpoint for testing
 
 api.add_resource(CreateArrangement, "/arrangement_create")
 api.add_resource(UpdateArrangement, "/arrangement_update")
 api.add_resource(DeactivateArrangement, "/arrangement_deactivate/<int:id>")
-api.add_resource(ReservationsListArrangement, "/reserved_arrangements/<int:reverse>")
+api.add_resource(ReservationsListArrangement, "/reserved_arrangements/")
 api.add_resource(PickTourGuideArrangement, "/pick_tour_guide/")
 api.add_resource(DetailedListArrangement, "/arrangements/")
 api.add_resource(BasicListArrangement, "/arrangements_basic/")
@@ -97,6 +95,6 @@ api.add_resource(BasicListReservation, "/reservations_basic/")
 
 if __name__ == "__main__":
     # Disable both when flask run
-    db.init_app(app)
-    ma.init_app(app)
+    #db.init_app(app)
+    #ma.init_app(app)
     app.run(host=app.config["RUN_HOST"])

@@ -21,7 +21,7 @@ from blacklist import BLACKLIST
 from decorators.roles import roles
 from constants.user_roles import UserRoles
 from libs.mailgun import Mailgun, MailGunException
-from helpers.pagination_and_sorting import paginate_sort_filter_user_profiles
+from helpers.pagination_and_sorting import paginate_and_sort, paginate_sort_filter_user_profiles
 
 
 USER_ALREADY_EXISTS = "A user with that username already exists."
@@ -252,7 +252,8 @@ class UserProfileUpdate(Resource):
 
 
 class UserProfileList(Resource):
-    """ ADMIN can view all user profiles and filter them. """
+    """ ADMIN can view all user profiles and filter them by acc type. Tourist reservations,
+        and Travel Guide bookings are also injected in JSON payload. """
     @classmethod
     @jwt_required()
     @roles.role_auth([UserRoles.ADMIN.value])
@@ -270,26 +271,7 @@ class TokenRefresh(Resource):
         return {"access_token": new_token}, HTTP_200_OK
 
 
-############################## Only for testing purposes ##############################
-class User(Resource):
-    @classmethod
-    def get(cls, user_id: int):
-        user = UserModel.find_by_id(user_id)
-        if not user:
-            return {"message": USER_NOT_FOUND}, HTTP_404_NOT_FOUND
-
-        return user_schema.dump(user), HTTP_200_OK
-
-    @classmethod
-    def delete(cls, user_id: int):
-        user = UserModel.find_by_id(user_id)
-        if not user:
-            return {"message": USER_NOT_FOUND}, HTTP_404_NOT_FOUND
-
-        user.delete_from_db()
-        return {"message": USER_DELETED}, HTTP_200_OK
-
-
+############################## For testing ##############################
 class UserRegisterAdmin(Resource):
     """ Create initial Admin account. """
     @classmethod

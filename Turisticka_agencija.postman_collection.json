@@ -10,7 +10,72 @@
 			"name": "Users",
 			"item": [
 				{
-					"name": "User registration",
+					"name": "Register Admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\":\"Admin\",\n    \"last_name\":\"Admin\",\n    \"email\":\"admin@admin.com\",\n    \"username\":\"UserAdmin\",\n    \"password\":\"admin1\",\n    \"password_confirmation\":\"admin1\",\n    \"acc_type_requested\":\"Admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/register_admin",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"register_admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"access_token not empty\"] = jsonData.access_token !== undefined;",
+									"pm.environment.set(\"jwt_token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\":\"UserAdmin\",\n    \"password\":\"admin1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -36,7 +101,7 @@
 					"response": []
 				},
 				{
-					"name": "User Login",
+					"name": "Login",
 					"event": [
 						{
 							"listen": "test",
@@ -75,7 +140,7 @@
 					"response": []
 				},
 				{
-					"name": "User Logout",
+					"name": "Logout",
 					"request": {
 						"auth": {
 							"type": "bearer"
@@ -151,6 +216,265 @@
 					"response": []
 				},
 				{
+					"name": "List requestsed acc type switch  Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/list_acc_change_requests",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"list_acc_change_requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Account type request Tourist or Travel Guide",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"acc_type_requested\":\"Travel Guide\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/acc_change_request",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"acc_change_request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Switch acc type Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Aback\",\n    \"is_approved\": true,\n    \"rejection_comment\": \"Bot detected\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/acc_change",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"acc_change"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile View Tourist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/user_profile_view",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user_profile_view"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile update Tourist",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 3,\n    \"first_name\": \"Andrija\",\n    \"last_name\": \"Petrovic1\",\n    \"email\": \"andrija231@gmail.com\",\n    \"username\": \"Aback\",\n    \"acc_type_requested\": \"Admin\",\n    \"acc_type\": \"Tourist\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/user_profile_update",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user_profile_update"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all users with pagination Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/user_profile_list/?page=1&per_page=5&sort_by=acc_type&sort_type=asc&filter=Tourist",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"user_profile_list",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "sort_by",
+									"value": "acc_type"
+								},
+								{
+									"key": "sort_type",
+									"value": "asc"
+								},
+								{
+									"key": "filter",
+									"value": "Tourist"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete User by ID",
 					"request": {
 						"method": "DELETE",
@@ -171,20 +495,72 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "Reservation Create",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"arrangement_id\": 1,\n    \"num_reservations\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/reservation_create",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"reservation_create"
+							]
+						}
+					},
+					"response": []
 				},
 				{
-					"name": "Change Account type by Name",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
+					"name": "Reservation list by user ID Tourist",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
 							}
+						],
+						"url": {
+							"raw": "{{url}}/reservations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"reservations"
+							]
 						}
-					],
+					},
+					"response": []
+				},
+				{
+					"name": "Reservations get all Admin",
 					"request": {
 						"auth": {
 							"type": "bearer"
@@ -198,97 +574,31 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/acc_change/Aback",
+							"raw": "{{url}}/reservations_basic/?page=1&per_page=5&sort_by=id&sort_type=asc",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"acc_change",
-								"Aback"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Agencies",
-			"item": [
-				{
-					"name": "Agency Create",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{url}}/agency/Compass",
-							"host": [
-								"{{url}}"
+								"reservations_basic",
+								""
 							],
-							"path": [
-								"agency",
-								"Compass"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Agency get by Name",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/agency/Compass",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"agency",
-								"Compass"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Agency get all",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/agencies",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"agencies"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Agency delete by Name",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{url}}/agency/Compass",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"agency",
-								"Compass"
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "sort_by",
+									"value": "id"
+								},
+								{
+									"key": "sort_type",
+									"value": "asc"
+								}
 							]
 						}
 					},
@@ -300,13 +610,16 @@
 			"name": "Arrangements",
 			"item": [
 				{
-					"name": "Arrangement create by Name NOT WORKING",
+					"name": "Create Arrangement  Admin",
 					"request": {
+						"auth": {
+							"type": "bearer"
+						},
 						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{jwt_token}}"
 							},
 							{
 								"key": "Content-Type",
@@ -315,26 +628,32 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"price\": 12.99,\n  \"store_id\": 1\n}"
+							"raw": "{\n  \"destination\": \"2Turkey\",\n  \"price\": 200,\n  \"date_start\": \"26-10-2022\",\n  \"date_end\": \"27-10-2022\",\n  \"nr_places_available\": 62,\n  \"description\": \"w Tssur11k2easassay11 99 888\"\n}"
 						},
 						"url": {
-							"raw": "{{url}}/arrangement/Turkey",
+							"raw": "{{url}}/arrangement_create",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"arrangement",
-								"Turkey"
+								"arrangement_create"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Arrangement create by Name",
+					"name": "Update Arrangement  Admin or Travel Guide",
 					"request": {
-						"method": "PUT",
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "POST",
 						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
 							{
 								"key": "Content-Type",
 								"value": "application/json"
@@ -342,40 +661,22 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"price\": 20.99,\n  \"agencies_id\": 1\n}"
+							"raw": "{\n  \"id\": 1,\n  \"destination\": \"2Turkey\",\n  \"price\": 200,\n  \"date_start\": \"26-10-2022\",\n  \"date_end\": \"27-10-2022\",\n  \"nr_places_available\": 62,\n  \"description\": \"GGG\"\n}"
 						},
 						"url": {
-							"raw": "{{url}}/arrangement/Turkey",
+							"raw": "{{url}}/arrangement_update",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"arrangement",
-								"Turkey"
+								"arrangement_update"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Arrangement get all",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/arrangements",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"arrangements"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Arrangement get all Authorization",
+					"name": "Pick Tour Guide",
 					"request": {
 						"auth": {
 							"type": "bearer"
@@ -389,47 +690,44 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/arrangements",
+							"raw": "{{url}}/pick_tour_guide/?tour_guide_id=3&arrangement_id=4",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"arrangements"
+								"pick_tour_guide",
+								""
+							],
+							"query": [
+								{
+									"key": "tour_guide_id",
+									"value": "3"
+								},
+								{
+									"key": "arrangement_id",
+									"value": "4"
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Arrangement get by Name",
+					"name": "Deactivate Admin",
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/arrangement/Turkey",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"arrangement",
-								"Turkey"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Arrangement get by Name",
-					"request": {
-						"method": "DELETE",
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
+								"value": "Bearer {{jwt_token}}"
 							},
 							{
 								"key": "Content-Type",
-								"value": "application/json"
+								"value": "application/json",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -437,13 +735,273 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{url}}/arrangement/Turkey",
+							"raw": "{{url}}/arrangement_deactivate/1",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"arrangement",
-								"Turkey"
+								"arrangement_deactivate",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detailed reserved or not reserved Tourist",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/reserved_arrangements/?reserved=true",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"reserved_arrangements",
+								""
+							],
+							"query": [
+								{
+									"key": "reserved",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Arrangements full list basic no Login",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/arrangements_basic/?page=1&per_page=5&sort_by=id&sort_type=asc",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangements_basic",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "sort_by",
+									"value": "id"
+								},
+								{
+									"key": "sort_type",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Arrangements list by destination Tourist",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/arrangements_dest_time/destination/Italy",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangements_dest_time",
+								"destination",
+								"Italy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Arrangements list by date Tourist",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/arrangements_dest_time/date_start/26-10-2022",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangements_dest_time",
+								"date_start",
+								"26-10-2022"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detailed Tour Guide bookings Travel Guide",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/arrangements_by_tour_guide_booking/?page=1&per_page=5&sort_by=id&sort_type=asc",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangements_by_tour_guide_booking",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "sort_by",
+									"value": "id"
+								},
+								{
+									"key": "sort_type",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detailed full list Admin Travel Guide",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/arrangements/?page=1&per_page=5&sort_by=id&sort_type=asc",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangements",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "sort_by",
+									"value": "id"
+								},
+								{
+									"key": "sort_type",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detailed list by creator Admin",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/arrangements_by_creator/?page=1&per_page=5&sort_by=id&sort_type=asc",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangements_by_creator",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "5"
+								},
+								{
+									"key": "sort_by",
+									"value": "id"
+								},
+								{
+									"key": "sort_type",
+									"value": "asc"
+								}
 							]
 						}
 					},

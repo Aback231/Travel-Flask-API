@@ -13,3 +13,4 @@ class ReservationSchema(ma.SQLAlchemyAutoSchema):
         ordered = True
         include_fk = True
         load_instance = True
+

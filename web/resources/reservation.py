@@ -97,8 +97,9 @@ class ListPerUserReservation(Resource):
     """ Get all reservations for user by ID """
     @classmethod
     @jwt_required()
+    @roles.role_auth([UserRoles.TOURIST.value])
     def get(cls):
-        return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservations", {"id": get_jwt_identity()})
+        return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservations", {"reserver_user_id": get_jwt_identity()})
 
 
 class BasicListReservation(Resource):
@@ -107,4 +108,4 @@ class BasicListReservation(Resource):
     @jwt_required()
     @roles.role_auth([UserRoles.ADMIN.value])
     def get(cls):
-        return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservation_items")
+        return paginate_and_sort(request, ReservationModel, reservation_list_schema, "reservations")

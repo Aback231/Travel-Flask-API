@@ -1,4 +1,5 @@
 import string
+from typing import Text
 from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -26,7 +27,7 @@ ARRANGEMENT_UPDATE_SUCCESS = "Arrangement updated successfully."
 ARRANGEMENT_TIME_TO_START_ERROR = "Arrangement has less than 5 days to start!"
 ARRANGEMENT_DEACTIVATED_SECCESS = "Arrangement was deactivated successfully."
 ARRANGEMENT_DEACTIVATED_ALREADY = "Arrangement was already deactivated."
-ARRANGEMENT_RESERVATIONS_LIST_PARAM_ERROR = "Please use correct endpoint </reserved_arrangements/0> with integer at the end <0 or 1>!"
+ARRANGEMENT_RESERVATIONS_LIST_PARAM_ERROR = "Please use correct endpoint </reserved_arrangements/?reserved=true> with integer at the end <0 or 1>!"
 ARRANGEMENT_LIST_DEST_TIME_KEY_ERROR = "Only <destination> and <date_start> keys are allowed!"
 ARRANGEMENT_ROLES_ERROR = ("Only <{}> account type(s) are allowed to be selected as tour guides!")
 ARRANGEMENT_TOUR_GUIDE_ASSIGNMENT_SUCCESS = ("Travel Guide <{}> successfully assigned to this arrangement!")
@@ -168,17 +169,17 @@ class DeactivateArrangement(Resource):
 
 
 class ReservationsListArrangement(Resource):
-    """ Get Detailed List of all reserved or not reserved Arrangements by user, login required.
-        If 0 is passed in request reserved_arrangements are returned, else not_reserved_arrangements """
+    """ Get Detailed List of all reserved or not reserved up from 5 days until start Arrangements by Tourist user. """
     @classmethod
     @jwt_required()
     @roles.role_auth([UserRoles.TOURIST.value])
-    def get(cls, reverse: int):
-        if reverse not in [0,1]:
-            return {"message": ARRANGEMENT_RESERVATIONS_LIST_PARAM_ERROR}, HTTP_500_INTERNAL_SERVER_ERROR
+    def get(cls):
+
+        is_filter_reserved = request.args.get('reserved') == 'true'
 
         user = UserModel.find_by_id(get_jwt_identity())
-        if reverse == 0:
+
+        if is_filter_reserved:
             return {"reserved_arrangements": arrangement_list_schema.dump(user.arrangements_reservations)}, HTTP_200_OK
 
         user_arrangements_ids = [x.id for x in user.arrangements_reservations]
@@ -200,7 +201,7 @@ class BasicListArrangement(Resource):
 
 
 class ListByDestinationOrTimeArrangement(Resource):
-    """ Get List of all Arrangements, by destination or time for TOURIST acc type. """
+    """ Get List of all Arrangements, by destination or time for Tourist acc type. """
     @classmethod
     @jwt_required()
     @roles.role_auth([UserRoles.TOURIST.value])
