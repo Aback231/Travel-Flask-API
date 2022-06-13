@@ -1,6 +1,6 @@
-## Python Flask Backend API with SQLAlchemy and PostgreSQL Database
+# Python Flask Backend API with SQLAlchemy and PostgreSQL Database
 
-### Services
+## Services
 
 Docker-compose is used to build all the services, and make them comunicate with each other.
 
@@ -12,7 +12,7 @@ Docker-compose is used to build all the services, and make them comunicate with 
 
 https://www.mailgun.com/ is used as email service (free domain for testing). After getting free API key, email which receives messages, needs to be approved first.
 
-### Build
+## Build
 
 To build containers and run: `docker-compose up --build`
 
@@ -20,6 +20,6 @@ By default flask app is running on http://127.0.0.1:5000
 
 Tested on: `Arch Linux` and `Ubuntu 21.10`
 
-### Documentation
+## Documentation
 
 Postman documentation was publicly pubished: [Postman publication](https://documenter.getpostman.com/view/21319787/Uz5KnaPh)
