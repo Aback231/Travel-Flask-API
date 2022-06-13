@@ -18,6 +18,7 @@ class ArrangementModel(db.Model):
 
     users_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
+    ## If you use backref you don't need to declare the relationship on the second table !!!
     user_reservations = db.relationship("UserModel", secondary="reservations", overlaps="user_reservations,reservations,user,arrangement")
 
 

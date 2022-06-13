@@ -1,5 +1,6 @@
-from typing import Text
 from werkzeug.security import safe_str_cmp
+from typing import Text
+import config
 
 from constants.user_roles import UserRoles
 from constants.http_status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -7,26 +8,17 @@ from constants.http_status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 PAGINATION_ERROR = ("Pagination failed. Error: {}")
 
-DEFAULT_PAGE = 1
-ITEMS_PAGE = 5
-DEFAULT_TAG = "id"
-DEFAULT_SORT_TYPE = "asc"
-
-
-""" Pagination and sorting is performed here, add following to 
-    endpoint: /?page=1&per_page=5&sort_by=id&sort_type=asc """
-
 
 def paging(request):
     """ Extract pagination variables from request params """
     # Pagination variables
-    page = request.args.get('page', DEFAULT_PAGE, type=int)
-    per_page = request.args.get('per_page', ITEMS_PAGE, type=int)
+    page = request.args.get('page', config.DEFAULT_PAGE, type=int)
+    per_page = request.args.get('per_page', config.ITEMS_PAGE, type=int)
 
     # Sort by desired key
-    sort_by = request.args.get('sort_by', DEFAULT_TAG, type=Text)
+    sort_by = request.args.get('sort_by', config.DEFAULT_TAG, type=Text)
     # Srot types: asc, desc
-    sort_type = request.args.get('sort_type', DEFAULT_SORT_TYPE, type=Text)
+    sort_type = request.args.get('sort_type', config.DEFAULT_SORT_TYPE, type=Text)
 
     return {"page": page, "per_page": per_page, "sort_by": sort_by, "sort_type": sort_type}
 
@@ -46,6 +38,8 @@ def meta_tag(paginated):
 
 
 def paginate_and_sort(request, model, schema, payload_name, filter_by={}):
+    """ Pagination and sorting is performed here, add following to 
+    endpoint: /?page=1&per_page=5&sort_by=id&sort_type=asc """
     """ Used for all function performing listings. """
     try:
         pg = paging(request)

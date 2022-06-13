@@ -21,7 +21,7 @@ from blacklist import BLACKLIST
 from decorators.roles import roles
 from constants.user_roles import UserRoles
 from libs.mailgun import Mailgun, MailGunException
-from helpers.pagination_and_sorting import paginate_and_sort, paginate_sort_filter_user_profiles
+from helpers.pagination_and_sorting import paginate_sort_filter_user_profiles
 
 
 USER_ALREADY_EXISTS = "A user with that username already exists."

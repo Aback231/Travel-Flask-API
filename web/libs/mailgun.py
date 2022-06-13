@@ -1,4 +1,5 @@
 from typing import List
+import os
 
 from constants.http_status_codes import HTTP_200_OK, HTTP_403_FORBIDDEN
 from requests import Response, post
@@ -15,8 +16,8 @@ class MailGunException(Exception):
 
 
 class Mailgun:
-    MAILGUN_API_KEY = "4626f9437f08a8afd18885cdfc685b84-523596d9-6927e3db"
-    MAILGUN_DOMAIN = "sandbox0a208a4ab1c347a980f0b30250a6ef1e.mailgun.org"
+    MAILGUN_API_KEY = os.environ['MAILGUN_API_KEY']
+    MAILGUN_DOMAIN = os.environ['MAILGUN_DOMAIN']
     FROM_TITLE = "RBT Travel Agency"
     FROM_EMAIL = f"do-not-reply@{MAILGUN_DOMAIN}"
 

@@ -38,16 +38,10 @@ from resources.reservation import (
     ListPerUserReservation,
     BasicListReservation
 )
-  
+
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql+psycopg2://user:pass@postgres_db_container/postgres"  # PostgreDB
-#app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///data.db"    # Local Sqlite for quick testing
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PROPAGATE_EXCEPTIONS'] = True
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-app.secret_key = 'secret'
+app.config.from_prefixed_env()
 api = Api(app)
 
 # Disable both when docker-compose up
@@ -59,6 +53,7 @@ api = Api(app)
 def create_tables():
     db.create_all()
 
+# App level Validation error handling
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation(err):
     return jsonify(err.messages), HTTP_400_BAD_REQUEST
@@ -104,4 +99,4 @@ if __name__ == "__main__":
     # Disable both when flask run
     db.init_app(app)
     ma.init_app(app)
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host=app.config["RUN_HOST"])
