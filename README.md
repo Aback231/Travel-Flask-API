@@ -4,4 +4,4 @@ docker-compose is used to build all the services, and make them comunicate with 
 
 To build containers run: `docker-compose build`
 
-To run the build run: `docker-compose up`
+To run the build run: `docker-compose up --build`
