@@ -325,7 +325,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"Aback\",\n    \"is_approved\": true,\n    \"rejection_comment\": \"Bot detected\"\n}",
+							"raw": "{\n    \"username\": \"User1\",\n    \"is_approved\": false,\n    \"rejection_comment\": \"Bot detected\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -400,7 +400,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": 3,\n    \"first_name\": \"Andrija\",\n    \"last_name\": \"Petrovic1\",\n    \"email\": \"andrija231@gmail.com\",\n    \"username\": \"Aback\",\n    \"acc_type_requested\": \"Admin\",\n    \"acc_type\": \"Tourist\"\n}"
+							"raw": "{\n    \"id\": 2,\n    \"first_name\": \"Andrija\",\n    \"last_name\": \"Mancic\",\n    \"email\": \"andrija231@gmail.com\",\n    \"username\": \"Aback\",\n    \"acc_type_requested\": \"Admin\",\n    \"acc_type\": \"Tourist\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/user_profile_update",
@@ -440,7 +440,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/user_profile_list/?page=1&per_page=5&sort_by=acc_type&sort_type=asc&filter=Tourist",
+							"raw": "{{url}}/user_profile_list/?page=1&per_page=5&sort_by=acc_type&sort_type=asc&filter=",
 							"host": [
 								"{{url}}"
 							],
@@ -467,7 +467,7 @@
 								},
 								{
 									"key": "filter",
-									"value": "Tourist"
+									"value": ""
 								}
 							]
 						}
@@ -628,7 +628,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"destination\": \"2Turkey\",\n  \"price\": 200,\n  \"date_start\": \"26-10-2022\",\n  \"date_end\": \"27-10-2022\",\n  \"nr_places_available\": 62,\n  \"description\": \"w Tssur11k2easassay11 99 888\"\n}"
+							"raw": "{\n  \"destination\": \"Greece\",\n  \"price\": 200,\n  \"date_start\": \"26-08-2022\",\n  \"date_end\": \"27-09-2022\",\n  \"nr_places_available\": 162,\n  \"description\": \"Greece is a country in southeastern Europe with thousands of islands throughout the Aegean and Ionian seas. Influential in ancient times, it's often called the cradle of Western civilization. Athens, its capital, retains landmarks including the 5th-century B.C. Acropolis citadel with the Parthenon temple.\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/arrangement_create",
@@ -661,7 +661,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"destination\": \"2Turkey\",\n  \"price\": 200,\n  \"date_start\": \"26-10-2022\",\n  \"date_end\": \"27-10-2022\",\n  \"nr_places_available\": 62,\n  \"description\": \"GGG\"\n}"
+							"raw": "{\n  \"id\": 1,\n  \"destination\": \"Italy\",\n  \"price\": 380,\n  \"date_start\": \"26-09-2022\",\n  \"date_end\": \"27-10-2022\",\n  \"nr_places_available\": 99,\n  \"description\": \"Italy is a boot-shaped peninsula that juts out of southern Europe into the Adriatic Sea, Tyrrhenian Sea, Mediterranean Sea, and other waters.\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/arrangement_update",
@@ -690,7 +690,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/pick_tour_guide/?tour_guide_id=3&arrangement_id=4",
+							"raw": "{{url}}/pick_tour_guide/?tour_guide_id=3&arrangement_id=1",
 							"host": [
 								"{{url}}"
 							],
@@ -705,7 +705,7 @@
 								},
 								{
 									"key": "arrangement_id",
-									"value": "4"
+									"value": "1"
 								}
 							]
 						}
@@ -859,14 +859,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/arrangements_dest_time/date_start/26-10-2022",
+							"raw": "{{url}}/arrangements_dest_time/date_start/26-09-2022",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"arrangements_dest_time",
 								"date_start",
-								"26-10-2022"
+								"26-09-2022"
 							]
 						}
 					},

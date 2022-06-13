@@ -19,3 +19,7 @@ To build containers and run: `docker-compose up --build`
 By default flask app is running on `http://127.0.0.1:5000`
 
 Tested on: `Arch Linux` and `Ubuntu 21.10`
+
+### Documentation
+
+Postman documentation was publicly pubished: `https://documenter.getpostman.com/view/21319787/Uz5KnaPh`
