@@ -1,5 +1,7 @@
 ## Python Flask Backend API with SQLAlchemy and PostgreSQL Database
 
+### Services
+
 Docker-compose is used to build all the services, and make them comunicate with each other.
 
 `web` service contains flask app with all pip requirements and exported .env variables.
@@ -9,6 +11,8 @@ Docker-compose is used to build all the services, and make them comunicate with 
 `pgadmin4_container` service contains pgadmin4 to view postgres DB visually.
 
 `https://www.mailgun.com/` is used as email service (free domain for testing). After getting free API key, email which receives messages, needs to be approved first.
+
+### Build
 
 To build containers and run: `docker-compose up --build`
 
