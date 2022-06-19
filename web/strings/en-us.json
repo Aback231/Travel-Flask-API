@@ -1,0 +1,65 @@
+{
+    "USER_ALREADY_EXISTS": "A user with that username already exists.",
+    "USER_EMAIL_ALREADY_EXISTS": "A user with that email already exists.",
+    "USER_NOT_FOUND": "User not found.",
+    "USER_INVALID_CREDENTIALS": "Invalid credentials!",
+    "USER_LOGGED_OUT": "Logout successful.",
+    "USER_FAILED_TO_CREATE": "Internal server error. Failed to create user.",
+    "USER_REGISTER_SUCCESS_MESSAGE": "Account created successfully.",
+    "USER_PASSWORD_MISMATCH": "Passwords don't match!",
+    "USER_PASSWORD_CONFIRMATION": "Passwords confirmation is required!",
+    "USER_ACC_CHANGED": "User Account type changed successfully from <{}> to <{}>.",
+    "USER_ACC_CHANGE_VALIDATION": "JSON parameters username and is_approved are required",
+    "USER_ACC_CHANGE_FAILED": "User Account type changed failed.",
+    "USER_MAILGUN_SUBJECT_ACC_CHANGE": "Account type change confirmation",
+    "USER_MAILGUN_SUBJECT_REGISTER": "Registration Confirmation",
+    "USER_MAILGUN_HTML_ACC_CHANGE_SUCCESS": "<html>Account type change from <b>{}</b> to <b>{}</b> successful.</html>",
+    "USER_MAILGUN_HTML_ACC_CHANGE_DENIED": "<html>Account type change from <b>{}</b> to <b>{}</b> was denied with comment: {}.</html>",
+    "USER_MAILGUN_HTML_REGISTER": "<html>Registration successful. Username: <b>{}</b></html>",
+    "USER_ACC_CHANGE_REQUEST_VALIDATION": "JSON parameter acc_type_requested is required",
+    "USER_ACC_CHANGE_REQUEST_SUCCESS": "Account type change request to {} successful.",
+    "USER_ACC_CHANGE_REQUEST_DENIED": "Account type change request was denied.",
+    "USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION": "Only <{}> and <{}> account types are allowed as acc_type_requested JSON parameters!",
+    "USER_ID_PARAM": "User <id> is required JSON parameter.",
+    "USER_PROFILE_UPDATE_SUCCESS": "User profile successfully updated.",
+
+
+    "RESERVATION_FAILED_TO_CREATE": "Internal server error. Failed to create reservation.",
+    "RESERVATION_UPDATED": "Reservation updated.",
+    "RESERVATION_CREATION_SUCCESS": "Reservation created successfully.",
+    "RESERVATION_CREATION_FAIL": "Reservation failed, requested arrangement id does not exist.",
+    "RESERVATION_CREATION_FAIL_NO_PLACES": "Reservation failed, no available places left.",
+    "RESERVATION_ARRANGEMENT_TIME_TO_START_ERROR": "Arrangement has less than 5 days to start! Can't be reserved.",
+    "RESERVATION_MAILGUN_SUBJECT": "Reservation confirmation",
+    "RESERVATION_MAILGUN_HTML_SUCCESS": "<html>Reservation created successfully. Price to pay <b>{}</b></html>",
+    "RESERVATION_MAILGUN_HTML_FAIL": "<html>Reservation failed, requested arrangement id does not exist.</html>",
+    "RESERVATION_MAILGUN_HTML_FAIL_NO_PLACES": "<html>Reservation failed, no available places left</html>",
+
+
+    "ARRANGEMENT_ID_PARAM": "Arrangement <{}> is a required parameter.",
+    "ARRANGEMENT_NOT_FOUND": "Arrangement not found.",
+    "ARRANGEMENT_ALREADY_EXISTS": "Arrangement already exists.",
+    "ARRANGEMENT_CREATION_SUCCESS": "Arrangement created successfully.",
+    "ARRANGEMENT_UPDATE_SUCCESS": "Arrangement updated successfully.",
+    "ARRANGEMENT_TIME_TO_START_ERROR": "Arrangement has less than 5 days to start!",
+    "ARRANGEMENT_DEACTIVATED_SECCESS": "Arrangement was deactivated successfully.",
+    "ARRANGEMENT_DEACTIVATED_ALREADY": "Arrangement was already deactivated.",
+    "ARRANGEMENT_LIST_DEST_TIME_KEY_ERROR": "Only <destination> and <date_start> keys are allowed!",
+    "ARRANGEMENT_ROLES_ERROR": "Only <{}> account types are allowed to be selected as tour guides!",
+    "ARRANGEMENT_TOUR_GUIDE_ASSIGNMENT_SUCCESS": "Travel Guide <{}> successfully assigned to this arrangement!",
+    "ARRANGEMENT_TOUR_GUIDE_ASSIGNMENT_FAIL": "Travel Guide <{}> not assigned, they are already booked for that date range!",
+    "ARRANGEMENT_TOUR_GUIDE_ASSIGNMENT_FAIL_ALREADY_BOOKED_FOR_THIS_ONE": "Travel Guide <{}> not assigned, they are already booked for this arrangement!",
+    "ARRANGEMENT_MAILGUN_SUBJECT_DEACTIVATED": "Arrangement deactivated",
+    "ARRANGEMENT_MAILGUN_HTML_DEACTIVATED": "<html>Arrangement You have a reservation for was deactivated.</html>",
+
+
+    "DECORATOR_ROLES_ERROR": "Only <{}> account type(s) are allowed to execute this API endpoint!",
+
+
+    "HELPERS_PAGINATION_ERROR": "Pagination failed. Error: {}",
+    
+
+    "LIBS_MAILGUN_FAILED_LOAD_API_KEY": "Failed to load Mailgun API key.",
+    "LIBS_MAILGUN_FAILED_LOAD_DOMAIN": "Failed to load Mailgun domain.",
+    "LIBS_MAILGUN_ERROR_SENDING_EMAIL": "Error in sending email {}."
+}

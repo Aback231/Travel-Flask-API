@@ -1,5 +1,6 @@
 import config
 
+
 def price_calculation(nr_reservations: int, price: float) -> float:
     """ Calculate price sum with discount for arrangement reservation """
     price_sum = nr_reservations * price

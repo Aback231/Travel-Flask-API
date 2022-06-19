@@ -2,11 +2,9 @@ from werkzeug.security import safe_str_cmp
 from typing import Text
 import config
 
+from libs.strings import get_text
 from constants.user_roles import UserRoles
 from constants.http_status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST
-
-
-PAGINATION_ERROR = ("Pagination failed. Error: {}")
 
 
 def paging(request):
@@ -24,8 +22,8 @@ def paging(request):
 
 
 def meta_tag(paginated):
-    """ Return meta tag to make it easy for frontend """
-    meta = {
+    """ Return meta tag to make it easy on the frontend """
+    return {
         "page": paginated.page,
         "pages": paginated.pages,
         "total_count": paginated.total,
@@ -34,7 +32,6 @@ def meta_tag(paginated):
         "has_next": paginated.has_next,
         "has_prev": paginated.has_prev,
     }
-    return meta
 
 
 def paginate_and_sort(request, model, schema, payload_name, filter_by={}):
@@ -44,13 +41,15 @@ def paginate_and_sort(request, model, schema, payload_name, filter_by={}):
     try:
         pg = paging(request)
 
-        paginated =  model.query.filter_by(**filter_by).order_by(eval('model.'+pg["sort_by"]+'.'+pg["sort_type"]+'()')).paginate(pg["page"], pg["per_page"], error_out=False)
+        paginated =  model.query.filter_by(**filter_by) \
+                    .order_by(eval('model.'+pg["sort_by"]+'.'+pg["sort_type"]+'()')) \
+                    .paginate(pg["page"], pg["per_page"], error_out=False)
 
         meta = meta_tag(paginated)
 
         return {payload_name: schema.dump(paginated.items), "meta": meta}, HTTP_200_OK
     except Exception as e:
-            return {"message": PAGINATION_ERROR.format(e)}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("HELPERS_PAGINATION_ERROR").format(e)}, HTTP_400_BAD_REQUEST
 
 
 def paginate_sort_filter_user_profiles(request, model, schema, payload_name, filter_by):
@@ -60,9 +59,13 @@ def paginate_sort_filter_user_profiles(request, model, schema, payload_name, fil
         acc_filter = request.args.get('filter', type=Text)
 
         if not acc_filter:
-            paginated =  model[0].query.filter((model[0].acc_type == filter_by[0]) | (model[0].acc_type == filter_by[1])).order_by(eval('model[0].'+pg["sort_by"]+'.'+pg["sort_type"]+'()')).paginate(pg["page"], pg["per_page"], error_out=False)
+            paginated =  model[0].query.filter((model[0].acc_type == filter_by[0]) | (model[0].acc_type == filter_by[1])) \
+                        .order_by(eval('model[0].'+pg["sort_by"]+'.'+pg["sort_type"]+'()')) \
+                        .paginate(pg["page"], pg["per_page"], error_out=False)
         else:
-            paginated =  model[0].query.filter((model[0].acc_type == acc_filter)).order_by(eval('model[0].'+pg["sort_by"]+'.'+pg["sort_type"]+'()')).paginate(pg["page"], pg["per_page"], error_out=False)
+            paginated =  model[0].query.filter((model[0].acc_type == acc_filter)) \
+                        .order_by(eval('model[0].'+pg["sort_by"]+'.'+pg["sort_type"]+'()')) \
+                        .paginate(pg["page"], pg["per_page"], error_out=False)
 
         meta = meta_tag(paginated)
 
@@ -75,4 +78,4 @@ def paginate_sort_filter_user_profiles(request, model, schema, payload_name, fil
             
         return {payload_name: items, "meta": meta}, HTTP_200_OK
     except Exception as e:
-            return {"message": PAGINATION_ERROR.format(e)}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("HELPERS_PAGINATION_ERROR").format(e)}, HTTP_400_BAD_REQUEST

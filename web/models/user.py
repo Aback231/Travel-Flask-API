@@ -1,4 +1,5 @@
 from typing import List
+import datetime
 
 from db import db
 from models.reservation import ReservationModel
@@ -16,6 +17,7 @@ class UserModel(db.Model):
     password = db.Column(db.String(300), nullable=False)
     acc_type_requested = db.Column(db.String(50), nullable=False)
     acc_type = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.datetime.now())
 
     # Key points to arrangements created by ADMIN user id
     items = db.relationship('ArrangementModel', lazy="dynamic", backref='item')

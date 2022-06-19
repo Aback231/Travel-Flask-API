@@ -1,3 +1,4 @@
+import os
 import bcrypt
 import traceback
 from flask_restful import Resource
@@ -21,34 +22,9 @@ from blacklist import BLACKLIST
 from decorators.roles import roles
 from constants.user_roles import UserRoles
 from libs.mailgun import Mailgun, MailGunException
-from helpers.pagination_and_sorting import paginate_and_sort, paginate_sort_filter_user_profiles
+from libs.strings import get_text
+from helpers.pagination_and_sorting import paginate_sort_filter_user_profiles
 
-
-USER_ALREADY_EXISTS = "A user with that username already exists."
-EMAIL_ALREADY_EXISTS = "A user with that email already exists."
-USER_NOT_FOUND = "User not found."
-USER_DELETED = "User deleted."
-INVALID_CREDENTIALS = "Invalid credentials!"
-USER_LOGGED_OUT = "Logout successful."
-FAILED_TO_CREATE = "Internal server error. Failed to create user."
-REGISTER_SUCCESS_MESSAGE = "Account created successfully."
-PASSWORD_MISMATCH = "Passwords don't match!"
-PASSWORD_CONFIRMATION = "Passwords confirmation is required!"
-USER_ACC_CHANGED = ("User Account type changed successfully from <{}> to <{}>.")
-USER_ACC_CHANGED_ALREADY = ("User Account type was already changed.")
-USER_ACC_CHANGE_VALIDATION = "JSON parameters username and is_approved are required"
-USER_ACC_CHANGE_FAILED = "User Account type changed failed."
-MAILGUN_SUBJECT_ACC_CHANGE = "Account type change confirmation"
-MAILGUN_SUBJECT_REGISTER = "Registration Confirmation"
-MAILGUN_HTML_ACC_CHANGE_SUCCESS = ("<html>Account type change from <b>{}</b> to <b>{}</b> successful.</html>")
-MAILGUN_HTML_ACC_CHANGE_DENIED = ("<html>Account type change from <b>{}</b> to <b>{}</b> was denied with comment: {}.</html>")
-MAILGUN_HTML_REGISTER = ("<html>Registration successful. Username: <b>{}</b></html>")
-USER_ACC_CHANGE_REQUEST_VALIDATION = "JSON parameter acc_type_requested is required"
-USER_ACC_CHANGE_REQUEST_SUCCESS = ("Account type change request to {} successful.")
-USER_ACC_CHANGE_REQUEST_DENIED = "Account type change request was denied."
-USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION = ("Only <{}> and <{}> account types are allowed as acc_type_requested JSON parameters!")
-USER_ID_PARAM = "User <id> is required JSON parameter."
-USER_PROFILE_UPDATE_SUCCESS = "User profile successfully updated."
 
 user_schema = UserSchema(unknown=INCLUDE)
 user_list_schema = UserSchema(many=True)
@@ -67,29 +43,32 @@ class UserRegister(Resource):
         user = user_schema.load(user_json)
         
         if UserModel.find_by_username(user.username):
-            return {"message": USER_ALREADY_EXISTS}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_ALREADY_EXISTS")}, HTTP_400_BAD_REQUEST
 
         if UserModel.find_by_email(user.email):
-            return {"message": EMAIL_ALREADY_EXISTS}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_EMAIL_ALREADY_EXISTS")}, HTTP_400_BAD_REQUEST
 
-        """ Validate password confirmation """
+        # Validate password confirmation
         if "password_confirmation" not in user_json.keys():
-            return {"message": PASSWORD_CONFIRMATION}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_PASSWORD_CONFIRMATION")}, HTTP_400_BAD_REQUEST
         if not safe_str_cmp(user.password, user_json["password_confirmation"]):
-            return {"message": PASSWORD_MISMATCH}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_PASSWORD_MISMATCH")}, HTTP_400_BAD_REQUEST
 
         try:
-            """ Encrypt password for DB storing """
+            # Encrypt password for DB storing
             user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt()).decode()
-            user.acc_type = UserRoles.DEFAULT_ROLE.value
+            if safe_str_cmp(os.environ["ADMIN_EMAIL"], user.email):
+                user.acc_type = UserRoles.ADMIN.value
+            else:
+                user.acc_type = UserRoles.DEFAULT_ROLE.value
             user.save_to_db()
-            Mailgun.send_email([user.email], MAILGUN_SUBJECT_REGISTER, MAILGUN_HTML_REGISTER.format(user.username))
-            return {"message": REGISTER_SUCCESS_MESSAGE}, HTTP_201_CREATED
+            Mailgun.send_email([user.email], get_text("USER_MAILGUN_SUBJECT_REGISTER"), get_text("USER_MAILGUN_HTML_REGISTER").format(user.username))
+            return {"message": get_text("USER_REGISTER_SUCCESS_MESSAGE")}, HTTP_201_CREATED
         except MailGunException as e:
             return {"message": str(e)}, HTTP_500_INTERNAL_SERVER_ERROR
         except:
             traceback.print_exc()
-            return {"message": FAILED_TO_CREATE}, HTTP_500_INTERNAL_SERVER_ERROR
+            return {"message": get_text("USER_FAILED_TO_CREATE")}, HTTP_500_INTERNAL_SERVER_ERROR
 
 
 class UserLogin(Resource):
@@ -103,6 +82,7 @@ class UserLogin(Resource):
 
         # Hash provided pass and compare to the one stored in DB for givrn UserName
         if user and safe_str_cmp(bcrypt.hashpw(user_data.password.encode('utf8'), user.password.encode()), user.password):
+            # Add additional_claims [acc_type] in access_token for role based auth
             access_token = create_access_token(identity=user.id, fresh=True, additional_claims={"acc_type": user.acc_type})
             refresh_token = create_refresh_token(user.id)
             return (
@@ -110,7 +90,7 @@ class UserLogin(Resource):
                 HTTP_200_OK,
             )
 
-        return {"message": INVALID_CREDENTIALS}, HTTP_401_UNAUTHORIZED
+        return {"message": get_text("USER_INVALID_CREDENTIALS")}, HTTP_401_UNAUTHORIZED
 
 
 class UserLogout(Resource):
@@ -120,7 +100,7 @@ class UserLogout(Resource):
     def post(cls):
         jti = get_jwt()['jti']
         BLACKLIST.add(jti)
-        return {"message": USER_LOGGED_OUT}, HTTP_200_OK
+        return {"message": get_text("USER_LOGGED_OUT")}, HTTP_200_OK
 
 
 class ListAccountChangeRequests(Resource):
@@ -152,33 +132,33 @@ class ListAccountChangeRequests(Resource):
 class UserAccountChangeRequest(Resource):
     """ Request account type change. Only TOURIST and TRAVEL_GUIDE are allowed to execute this endpoint. """
     @classmethod
-    @jwt_required()
+    @jwt_required(fresh=True)
     @roles.role_auth([UserRoles.TOURIST.value, UserRoles.TRAVEL_GUIDE.value])
     def post(cls):
         if "acc_type_requested" not in request.get_json().keys():
-            return {"message": USER_ACC_CHANGE_REQUEST_VALIDATION}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_ACC_CHANGE_REQUEST_VALIDATION")}, HTTP_400_BAD_REQUEST
 
         acc_type_requested_new = request.get_json()["acc_type_requested"]
 
         if acc_type_requested_new not in [UserRoles.TRAVEL_GUIDE.value, UserRoles.ADMIN.value]:
-            return {"message": USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION.format(UserRoles.TRAVEL_GUIDE.value, UserRoles.ADMIN.value)}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_ACC_CHANGE_REQUEST_ROLE_VALIDATION").format(UserRoles.TRAVEL_GUIDE.value, UserRoles.ADMIN.value)}, HTTP_400_BAD_REQUEST
 
         user = UserModel.find_by_id(get_jwt_identity())
 
         user.acc_type_requested = acc_type_requested_new
         user.save_to_db()
 
-        return {"message": USER_ACC_CHANGE_REQUEST_SUCCESS.format(acc_type_requested_new)}, HTTP_200_OK
+        return {"message": get_text("USER_ACC_CHANGE_REQUEST_SUCCESS").format(acc_type_requested_new)}, HTTP_200_OK
 
 
 class UserAccountChange(Resource):
     """ Admin approves or denies (with comment) user account change request. Email is sent in both cases.  """
     @classmethod
-    @jwt_required()
+    @jwt_required(fresh=True)
     @roles.role_auth([UserRoles.ADMIN.value])
     def post(cls):
         if "username" not in request.get_json().keys() or "is_approved" not in request.get_json().keys():
-            return {"message": USER_ACC_CHANGE_VALIDATION}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_ACC_CHANGE_VALIDATION")}, HTTP_400_BAD_REQUEST
 
         acc_change_json = request.get_json()
 
@@ -187,11 +167,12 @@ class UserAccountChange(Resource):
         rejection_comment = acc_change_json["rejection_comment"]
 
         user = UserModel.find_by_username(username)
-        acc_type_old = user.acc_type
-        acc_type_requested_old = user.acc_type_requested
 
         if not user:
-            return {"message": USER_NOT_FOUND}, HTTP_404_NOT_FOUND
+            return {"message": get_text("USER_NOT_FOUND")}, HTTP_404_NOT_FOUND
+
+        acc_type_old = user.acc_type
+        acc_type_requested_old = user.acc_type_requested
 
         # Request rejected, set acc_type_requested to current acc_type
         try:
@@ -199,20 +180,20 @@ class UserAccountChange(Resource):
                 user.acc_type_requested = user.acc_type
                 user.save_to_db()
 
-                Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE_DENIED.format(user.acc_type_requested, acc_type_requested_old, rejection_comment))
-                return {"message": USER_ACC_CHANGE_REQUEST_DENIED}, HTTP_200_OK
+                Mailgun.send_email([user.email], get_text("USER_MAILGUN_SUBJECT_ACC_CHANGE"), get_text("USER_MAILGUN_HTML_ACC_CHANGE_DENIED").format(user.acc_type_requested, acc_type_requested_old, rejection_comment))
+                return {"message": get_text("USER_ACC_CHANGE_REQUEST_DENIED")}, HTTP_200_OK
 
             # Request approved, set current acc_type to acc_type_requested
             user.acc_type = user.acc_type_requested
             user.save_to_db()
 
-            Mailgun.send_email([user.email], MAILGUN_SUBJECT_ACC_CHANGE, MAILGUN_HTML_ACC_CHANGE_SUCCESS.format(acc_type_old, user.acc_type_requested))
-            return {"message": USER_ACC_CHANGED.format(acc_type_old, user.acc_type_requested)}, HTTP_200_OK
+            Mailgun.send_email([user.email], get_text("USER_MAILGUN_SUBJECT_ACC_CHANGE"), get_text("USER_MAILGUN_HTML_ACC_CHANGE_SUCCESS").format(acc_type_old, user.acc_type_requested))
+            return {"message": get_text("USER_ACC_CHANGED").format(acc_type_old, user.acc_type_requested)}, HTTP_200_OK
         except MailGunException as e:
             return {"message": str(e)}, HTTP_500_INTERNAL_SERVER_ERROR
         except:
             traceback.print_exc()
-            return {"message": USER_ACC_CHANGE_FAILED}, HTTP_500_INTERNAL_SERVER_ERROR
+            return {"message": get_text("USER_ACC_CHANGE_FAILED")}, HTTP_500_INTERNAL_SERVER_ERROR
 
 
 class UserProfileView(Resource):
@@ -228,19 +209,19 @@ class UserProfileView(Resource):
 class UserProfileUpdate(Resource):
     """ TOURIST can update their profile. """
     @classmethod
-    @jwt_required()
+    @jwt_required(fresh=True)
     @roles.role_auth([UserRoles.TOURIST.value])
     def post(cls):
         user_json = request.get_json()
         user_profile_schema.load(user_json)
 
         if "id" not in user_json.keys():
-            return {"message": USER_ID_PARAM}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_ID_PARAM")}, HTTP_400_BAD_REQUEST
         
         arrangement = UserModel.find_by_id(user_json["id"])
 
         if not arrangement:
-            return {"message": USER_NOT_FOUND}, HTTP_400_BAD_REQUEST
+            return {"message": get_text("USER_NOT_FOUND")}, HTTP_400_BAD_REQUEST
 
         for key in user_json:
             if not safe_str_cmp(key, "id"):
@@ -248,7 +229,7 @@ class UserProfileUpdate(Resource):
 
         arrangement.save_to_db()
 
-        return {"message": USER_PROFILE_UPDATE_SUCCESS}, HTTP_201_CREATED
+        return {"message": get_text("USER_PROFILE_UPDATE_SUCCESS")}, HTTP_201_CREATED
 
 
 class UserProfileList(Resource):
@@ -262,44 +243,12 @@ class UserProfileList(Resource):
 
 
 class TokenRefresh(Resource):
-    """ Request Fresh Token  """
+    """ Request new access token, which is not fresh. 
+        If user is doing something critical we could mandate token to be fresh with @jwt_required(fresh=True).  """
     @classmethod
     @jwt_required(refresh=True)
     def post(cls):
-        current_user = get_jwt_identity()
-        new_token = create_access_token(identity=current_user, fresh=False)
-        return {"access_token": new_token}, HTTP_200_OK
-
-
-############################## For testing ##############################
-class UserRegisterAdmin(Resource):
-    """ Create initial Admin account. """
-    @classmethod
-    def post(cls):
-        user_json = request.get_json()
-        user = user_schema.load(user_json)
-        
-        if UserModel.find_by_username(user.username):
-            return {"message": USER_ALREADY_EXISTS}, HTTP_400_BAD_REQUEST
-
-        if UserModel.find_by_email(user.email):
-            return {"message": EMAIL_ALREADY_EXISTS}, HTTP_400_BAD_REQUEST
-
-        # Validate password confirmation
-        if "password_confirmation" not in user_json.keys():
-            return {"message": PASSWORD_CONFIRMATION}, HTTP_400_BAD_REQUEST
-        if not safe_str_cmp(user.password, user_json["password_confirmation"]):
-            return {"message": PASSWORD_MISMATCH}, HTTP_400_BAD_REQUEST
-
-        try:
-            # Encrypt password for DB storing
-            user.password = bcrypt.hashpw(user.password.encode('utf8'), bcrypt.gensalt()).decode()
-            user.acc_type = UserRoles.ADMIN.value
-            user.save_to_db()
-            Mailgun.send_email([user.email], MAILGUN_SUBJECT_REGISTER, MAILGUN_HTML_REGISTER.format(user.username))
-            return {"message": REGISTER_SUCCESS_MESSAGE}, HTTP_201_CREATED
-        except MailGunException as e:
-            return {"message": str(e)}, HTTP_500_INTERNAL_SERVER_ERROR
-        except:  # failed to save user to db
-            traceback.print_exc()
-            return {"message": FAILED_TO_CREATE}, HTTP_500_INTERNAL_SERVER_ERROR
+        current_user_id = get_jwt_identity()
+        user = UserModel.find_by_id(current_user_id)
+        new_access_token = create_access_token(identity=current_user_id, fresh=False, additional_claims={"acc_type": user.acc_type})
+        return {"access_token": new_access_token}, HTTP_200_OK

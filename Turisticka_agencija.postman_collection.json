@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "418d303a-df4c-408c-ae8a-170dd5522bc9",
-		"name": "Turisticka_agencija",
+		"_postman_id": "a46377a9-4486-4ad1-b389-6469ef8d4a31",
+		"name": "Turisticka_agencija REFACTOR",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21319787"
 	},
@@ -24,12 +24,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/register_admin",
+							"raw": "{{url}}/register",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"register_admin"
+								"register"
 							]
 						}
 					},
@@ -44,7 +44,9 @@
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"tests[\"access_token not empty\"] = jsonData.access_token !== undefined;",
-									"pm.environment.set(\"jwt_token\", jsonData.access_token);"
+									"tests[\"refresh_token not empty\"] = jsonData.refresh_token !== undefined;",
+									"pm.environment.set(\"jwt_token\", jsonData.access_token);",
+									"pm.environment.set(\"refresh_token\", jsonData.refresh_token);"
 								],
 								"type": "text/javascript"
 							}
@@ -109,7 +111,9 @@
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
 									"tests[\"access_token not empty\"] = jsonData.access_token !== undefined;",
-									"pm.environment.set(\"jwt_token\", jsonData.access_token);"
+									"tests[\"refresh_token not empty\"] = jsonData.refresh_token !== undefined;",
+									"pm.environment.set(\"jwt_token\", jsonData.access_token);",
+									"pm.environment.set(\"refresh_token\", jsonData.refresh_token);"
 								],
 								"type": "text/javascript"
 							}
@@ -171,7 +175,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
 								"exec": [
 									"var jsonData = pm.response.json();",
 									"pm.test(\"access_token not empty\", function () {",
@@ -179,11 +182,12 @@
 									"});",
 									"// set access token as environement variable",
 									"if (jsonData.access_token !== undefined) {",
-									"    postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+									"    postman.setEnvironmentVariable(\"jwt_token\", jsonData.access_token);",
 									"} else {",
-									"    postman.setEnvironmentVariable(\"access_token\", null);",
+									"    postman.setEnvironmentVariable(\"jwt_token\", null);",
 									"}"
-								]
+								],
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -400,7 +404,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": 2,\n    \"first_name\": \"Andrija\",\n    \"last_name\": \"Mancic\",\n    \"email\": \"andrija231@gmail.com\",\n    \"username\": \"Aback\",\n    \"acc_type_requested\": \"Admin\",\n    \"acc_type\": \"Tourist\"\n}"
+							"raw": "{\n    \"id\": 2,\n    \"first_name\": \"Andrija\",\n    \"last_name\": \"Mancics\",\n    \"email\": \"andrija231@gmail.com\",\n    \"username\": \"Aback\",\n    \"acc_type_requested\": \"Admin\",\n    \"acc_type\": \"Tourist\"\n}"
 						},
 						"url": {
 							"raw": "{{url}}/user_profile_update",
@@ -628,15 +632,15 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"destination\": \"Greece\",\n  \"price\": 200,\n  \"date_start\": \"26-08-2022\",\n  \"date_end\": \"27-09-2022\",\n  \"nr_places_available\": 162,\n  \"description\": \"Greece is a country in southeastern Europe with thousands of islands throughout the Aegean and Ionian seas. Influential in ancient times, it's often called the cradle of Western civilization. Athens, its capital, retains landmarks including the 5th-century B.C. Acropolis citadel with the Parthenon temple.\"\n}"
+							"raw": "{\n  \"destination\": \"Italy\",\n  \"price\": 200,\n  \"date_start\": \"2022-06-26\",\n  \"date_end\": \"2022-06-29\",\n  \"nr_places_available\": 162,\n  \"description\": \"Greeceais a country in southeastern Europe with thousands of islands throughout the Aegean and Ionian seas. Influential in ancient times, it's often called the cradle of Western civilization. Athens, its capital, retains landmarks including the 5th-century B.C. Acropolis citadel with the Parthenon temple.\"\n}"
 						},
 						"url": {
-							"raw": "{{url}}/arrangement_create",
+							"raw": "{{url}}/arrangement",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"arrangement_create"
+								"arrangement"
 							]
 						}
 					},
@@ -648,7 +652,7 @@
 						"auth": {
 							"type": "bearer"
 						},
-						"method": "POST",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Authorization",
@@ -661,15 +665,54 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"destination\": \"Italy\",\n  \"price\": 380,\n  \"date_start\": \"26-09-2022\",\n  \"date_end\": \"27-10-2022\",\n  \"nr_places_available\": 99,\n  \"description\": \"Italy is a boot-shaped peninsula that juts out of southern Europe into the Adriatic Sea, Tyrrhenian Sea, Mediterranean Sea, and other waters.\"\n}"
+							"raw": "{\n  \"id\": 1,\n  \"destination\": \"Greece\",\n  \"price\": 380,\n  \"date_start\": \"2022-06-28\",\n  \"date_end\": \"2022-06-29\",\n  \"nr_places_available\": 99,\n  \"description\": \"Greece is a bsoot-shaped peninsula that juts out of southern Europe into the Adriatic Sea, Tyrrhenian Sea, Mediterranean Sea, and other waters.\"\n}"
 						},
 						"url": {
-							"raw": "{{url}}/arrangement_update",
+							"raw": "{{url}}/arrangement",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"arrangement_update"
+								"arrangement"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Admin",
+					"request": {
+						"auth": {
+							"type": "bearer"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/arrangement",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"arrangement"
 							]
 						}
 					},
@@ -681,7 +724,7 @@
 						"auth": {
 							"type": "bearer"
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
@@ -707,41 +750,6 @@
 									"key": "arrangement_id",
 									"value": "1"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Deactivate Admin",
-					"request": {
-						"auth": {
-							"type": "bearer"
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{url}}/arrangement_deactivate/1",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"arrangement_deactivate",
-								"1"
 							]
 						}
 					},
@@ -859,14 +867,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{url}}/arrangements_dest_time/date_start/26-09-2022",
+							"raw": "{{url}}/arrangements_dest_time/date_start/2022-06-24",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"arrangements_dest_time",
 								"date_start",
-								"26-09-2022"
+								"2022-06-24"
 							]
 						}
 					},

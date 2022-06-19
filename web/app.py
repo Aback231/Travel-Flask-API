@@ -3,9 +3,7 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from marshmallow import ValidationError
 
-from constants.http_status_codes import HTTP_400_BAD_REQUEST
-from db import db
-from ma import ma
+from constants.http_status_codes import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from blacklist import BLACKLIST
 from resources.user import (
     UserRegister,
@@ -14,20 +12,17 @@ from resources.user import (
     UserLogout,
     UserAccountChangeRequest,
     UserAccountChange,
-    UserRegisterAdmin,
     UserProfileView,
     UserProfileList,
     UserProfileUpdate,
     ListAccountChangeRequests,
 )
 from resources.arrangement import (
-    UpdateArrangement,
+    Arrangement,
     DetailedListArrangement,
     ReservationsListArrangement,
     BasicListArrangement,
     ListByCreatorArrangement,
-    CreateArrangement,
-    DeactivateArrangement,
     ListByDestinationOrTimeArrangement,
     PickTourGuideArrangement,
     DetailedListTourGuideArrangement,
@@ -43,21 +38,27 @@ app = Flask(__name__)
 app.config.from_prefixed_env()
 api = Api(app)
 
-# Disable both when docker-compose up
-db.init_app(app)
-ma.init_app(app)
 
-# Create DB
-@app.before_first_request
-def create_tables():
-    db.create_all()
+# App level 404 error handling
+@app.errorhandler(HTTP_404_NOT_FOUND)
+def page_not_found(err):
+    return {"error": str(err)}, HTTP_404_NOT_FOUND
+
+
+# App level 500 error handling
+@app.errorhandler(HTTP_500_INTERNAL_SERVER_ERROR)
+def page_not_found(err):
+    return {"error": str(err)}, HTTP_500_INTERNAL_SERVER_ERROR
+
 
 # App level Validation error handling
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation(err):
     return jsonify(err.messages), HTTP_400_BAD_REQUEST
 
+
 jwt = JWTManager(app)
+
 
 # Check if Token is blacklisted
 @jwt.token_in_blocklist_loader
@@ -75,11 +76,8 @@ api.add_resource(UserProfileUpdate, "/user_profile_update")
 api.add_resource(UserAccountChangeRequest, "/acc_change_request")
 api.add_resource(UserAccountChange, "/acc_change")
 api.add_resource(ListAccountChangeRequests, "/list_acc_change_requests")
-api.add_resource(UserRegisterAdmin, "/register_admin")   # endpoint for testing
 
-api.add_resource(CreateArrangement, "/arrangement_create")
-api.add_resource(UpdateArrangement, "/arrangement_update")
-api.add_resource(DeactivateArrangement, "/arrangement_deactivate/<int:id>")
+api.add_resource(Arrangement, "/arrangement")
 api.add_resource(ReservationsListArrangement, "/reserved_arrangements/")
 api.add_resource(PickTourGuideArrangement, "/pick_tour_guide/")
 api.add_resource(DetailedListArrangement, "/arrangements/")
@@ -94,7 +92,4 @@ api.add_resource(BasicListReservation, "/reservations_basic/")
 
 
 if __name__ == "__main__":
-    # Disable both when flask run
-    #db.init_app(app)
-    #ma.init_app(app)
     app.run(host=app.config["RUN_HOST"])

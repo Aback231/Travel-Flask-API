@@ -9,3 +9,4 @@ flask_marshmallow
 marshmallow-sqlalchemy
 requests
 python-dateutil
+gunicorn

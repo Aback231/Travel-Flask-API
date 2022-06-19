@@ -22,4 +22,4 @@ Tested on: `Arch Linux` and `Ubuntu 21.10`
 
 ## Documentation
 
-Postman documentation was publicly pubished: [Postman publication](https://documenter.getpostman.com/view/21319787/Uz5KnaPh)
+Postman documentation was publicly pubished: [Postman publication](https://documenter.getpostman.com/view/21319787/UzBmMnEK)
