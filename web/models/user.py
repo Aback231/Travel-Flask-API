@@ -2,9 +2,12 @@ from typing import List
 import datetime
 
 from db import db
+from helpers.get_roles import get_roles_list
 from models.reservation import ReservationModel
 from models.arrangement import ArrangementModel
 
+
+ROLES = get_roles_list()
 
 class UserModel(db.Model):
     __tablename__ = "users"
@@ -15,8 +18,8 @@ class UserModel(db.Model):
     email = db.Column(db.String(80), nullable=False, unique=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(300), nullable=False)
-    acc_type_requested = db.Column(db.String(50), nullable=False)
-    acc_type = db.Column(db.String(50))
+    acc_type_requested = db.Column(db.String(50), db.CheckConstraint(f"acc_type_requested in {ROLES}"), nullable=False)
+    acc_type = db.Column(db.String(50), db.CheckConstraint(f"acc_type in {ROLES}"))
     created_at = db.Column(db.DateTime, default=datetime.datetime.now())
 
     # Key points to arrangements created by ADMIN user id

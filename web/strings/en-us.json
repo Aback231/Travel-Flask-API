@@ -1,4 +1,5 @@
 {
+    "USER_ROLE_FAIL": "User role must be one of the following: {}.",
     "USER_ALREADY_EXISTS": "A user with that username already exists.",
     "USER_EMAIL_ALREADY_EXISTS": "A user with that email already exists.",
     "USER_NOT_FOUND": "User not found.",
