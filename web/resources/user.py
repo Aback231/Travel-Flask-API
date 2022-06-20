@@ -24,7 +24,6 @@ from constants.user_roles import UserRoles
 from libs.mailgun import Mailgun, MailGunException
 from libs.strings import get_text
 from helpers.pagination_and_sorting import paginate_sort_filter_user_profiles
-from helpers.get_roles import get_roles_list
 
 
 user_schema = UserSchema(unknown=INCLUDE)
@@ -43,10 +42,10 @@ class UserRegister(Resource):
         user_json = request.get_json()
         user = user_schema.load(user_json)
 
-        roles_list = get_roles_list()
+        roles_touple = UserRoles.get_roles_touple()
 
-        if user.acc_type_requested not in roles_list:
-            return {"message": get_text("USER_ROLE_FAIL").format(roles_list)}, HTTP_400_BAD_REQUEST
+        if user.acc_type_requested not in roles_touple:
+            return {"message": get_text("USER_ROLE_FAIL").format(roles_touple)}, HTTP_400_BAD_REQUEST
         
         if UserModel.find_by_username(user.username):
             return {"message": get_text("USER_ALREADY_EXISTS")}, HTTP_400_BAD_REQUEST
