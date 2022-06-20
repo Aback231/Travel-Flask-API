@@ -5,6 +5,11 @@ from db import db
 
 class ArrangementModel(db.Model):
     __tablename__ = "arrangements"
+    
+    __table_args__ = (
+        db.CheckConstraint("date_end > date_start"),
+        db.CheckConstraint(f"date_start > CURRENT_DATE"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     destination = db.Column(db.String(200), nullable=False)

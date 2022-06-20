@@ -37,6 +37,7 @@
     "RESERVATION_MAILGUN_HTML_FAIL_NO_PLACES": "<html>Reservation failed, no available places left</html>",
 
 
+    "ARRANGEMENT_ERROR_DATES_OVERLAP_DATE_START_IN_PAST": "Arrangement date end must be greater than date start, while date start must be greater than today's date.",
     "ARRANGEMENT_ID_PARAM": "Arrangement <{}> is a required parameter.",
     "ARRANGEMENT_NOT_FOUND": "Arrangement not found.",
     "ARRANGEMENT_ALREADY_EXISTS": "Arrangement already exists.",

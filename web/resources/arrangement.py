@@ -1,3 +1,4 @@
+from gettext import gettext
 from dateutil import parser
 import string
 from typing import Text
@@ -5,6 +6,7 @@ from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from werkzeug.security import safe_str_cmp
+from sqlalchemy.exc import IntegrityError
 
 from constants.http_status_codes import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from helpers import date_parser
@@ -29,16 +31,19 @@ class Arrangement(Resource):
     @jwt_required()
     @roles.role_auth([UserRoles.ADMIN.value])
     def post(cls):
-        arrangement_json = request.get_json()
-        arrangement = arrangement_schema.load(arrangement_json)
+        try:
+            arrangement_json = request.get_json()
+            arrangement = arrangement_schema.load(arrangement_json)
 
-        if ArrangementModel.find_by_description(arrangement.description):
-            return {"message": get_text("ARRANGEMENT_ALREADY_EXISTS")}, HTTP_400_BAD_REQUEST
+            if ArrangementModel.find_by_description(arrangement.description):
+                return {"message": get_text("ARRANGEMENT_ALREADY_EXISTS")}, HTTP_400_BAD_REQUEST
 
-        arrangement.users_id = get_jwt_identity()
-        arrangement.save_to_db()
+            arrangement.users_id = get_jwt_identity()
+            arrangement.save_to_db()
 
-        return {"message": get_text("ARRANGEMENT_CREATION_SUCCESS")}, HTTP_201_CREATED
+            return {"message": get_text("ARRANGEMENT_CREATION_SUCCESS")}, HTTP_201_CREATED
+        except IntegrityError:
+            return {"DB Integrity Error" : get_text("ARRANGEMENT_ERROR_DATES_OVERLAP_DATE_START_IN_PAST")}, HTTP_400_BAD_REQUEST
 
 
     """ Arangement update at latest 5 days before it starts 
@@ -48,44 +53,47 @@ class Arrangement(Resource):
     @jwt_required()
     @roles.role_auth([UserRoles.ADMIN.value, UserRoles.TRAVEL_GUIDE.value])
     def put(cls):
-        is_admin = safe_str_cmp(UserModel.find_by_id(get_jwt_identity()).acc_type, UserRoles.ADMIN.value)
-        arrangement_json = request.get_json()
+        try:
+            is_admin = safe_str_cmp(UserModel.find_by_id(get_jwt_identity()).acc_type, UserRoles.ADMIN.value)
+            arrangement_json = request.get_json()
 
-        # Validation for full Arrangement Model
-        if is_admin:
-            schema = arrangement_schema.load(arrangement_json)
+            # Validation for full Arrangement Model
+            if is_admin:
+                schema = arrangement_schema.load(arrangement_json)
 
-        # Validate id present in JSON, it's not in Model Validation
-        if "id" not in arrangement_json.keys():
-            return {"message": get_text("ARRANGEMENT_ID_PARAM").format("id")}, HTTP_400_BAD_REQUEST
-        
-        arrangement = ArrangementModel.find_by_id(arrangement_json["id"])
+            # Validate id present in JSON, it's not in Model Validation
+            if "id" not in arrangement_json.keys():
+                return {"message": get_text("ARRANGEMENT_ID_PARAM").format("id")}, HTTP_400_BAD_REQUEST
+            
+            arrangement = ArrangementModel.find_by_id(arrangement_json["id"])
 
-        if not arrangement:
-            return {"message": get_text("ARRANGEMENT_NOT_FOUND")}, HTTP_404_NOT_FOUND
+            if not arrangement:
+                return {"message": get_text("ARRANGEMENT_NOT_FOUND")}, HTTP_404_NOT_FOUND
 
-        # Validate arrangement date
-        if not date_parser.is_arrangement_reservable(arrangement.date_start):
-            return {"message": get_text("ARRANGEMENT_TIME_TO_START_ERROR")}, HTTP_400_BAD_REQUEST
+            # Validate arrangement date
+            if not date_parser.is_arrangement_reservable(arrangement.date_start):
+                return {"message": get_text("ARRANGEMENT_TIME_TO_START_ERROR")}, HTTP_400_BAD_REQUEST
 
-        # Admin can update all fields, Travel Guide just description
-        if is_admin:
-            # Set arrangement key values from JSON payload passed in request by Admin
-            for key in arrangement_json:
-                if not safe_str_cmp(key, "id"):
-                    if safe_str_cmp(key, "date_start") or safe_str_cmp(key, "date_end"):
-                        arrangement.__setattr__(key, parser.parse(arrangement_json[key], yearfirst=True))
-                    else:
-                        arrangement.__setattr__(key, arrangement_json[key])
-        else:
-            # Set description key if it exists in JSON payload
-            if "description" not in arrangement_json.keys():
-                return {"message": get_text("ARRANGEMENT_ID_PARAM").format("description")}, HTTP_400_BAD_REQUEST
-            arrangement.description = arrangement_json["description"]
+            # Admin can update all fields, Travel Guide just description
+            if is_admin:
+                # Set arrangement key values from JSON payload passed in request by Admin
+                for key in arrangement_json:
+                    if not safe_str_cmp(key, "id"):
+                        if safe_str_cmp(key, "date_start") or safe_str_cmp(key, "date_end"):
+                            arrangement.__setattr__(key, parser.parse(arrangement_json[key], yearfirst=True))
+                        else:
+                            arrangement.__setattr__(key, arrangement_json[key])
+            else:
+                # Set description key if it exists in JSON payload
+                if "description" not in arrangement_json.keys():
+                    return {"message": get_text("ARRANGEMENT_ID_PARAM").format("description")}, HTTP_400_BAD_REQUEST
+                arrangement.description = arrangement_json["description"]
 
-        arrangement.save_to_db()
-
-        return {"message": get_text("ARRANGEMENT_UPDATE_SUCCESS")}, HTTP_201_CREATED
+            arrangement.save_to_db()
+            
+            return {"message": get_text("ARRANGEMENT_UPDATE_SUCCESS")}, HTTP_201_CREATED
+        except IntegrityError:
+            return {"DB Integrity Error" : get_text("ARRANGEMENT_ERROR_DATES_OVERLAP_DATE_START_IN_PAST")}, HTTP_400_BAD_REQUEST
 
 
     """ Admin can deactivate an Arrangement at latest 5 days before it starts """
