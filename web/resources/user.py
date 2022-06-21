@@ -112,7 +112,7 @@ class UserLogout(Resource):
 
         # Token blacklisting in very fast Redis DB
         jti = get_jwt()["jti"]
-        jwt_redis_blocklist.set(jti, "")
+        jwt_redis_blocklist.set(jti, "", ex=int(os.environ['FLASK_JWT_ACCESS_TOKEN_EXPIRES']))
         return {"message": get_text("USER_LOGGED_OUT")}, HTTP_200_OK
 
 
