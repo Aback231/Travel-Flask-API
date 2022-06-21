@@ -2,7 +2,6 @@ from typing import List
 import datetime
 
 from db import db
-""" from helpers.get_roles import get_roles_list """
 from constants.user_roles import UserRoles
 from models.reservation import ReservationModel
 from models.arrangement import ArrangementModel

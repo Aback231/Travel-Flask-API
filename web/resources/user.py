@@ -1,8 +1,9 @@
+from datetime import timedelta
 import os
 import bcrypt
 import traceback
 from flask_restful import Resource
-from flask import request
+from flask import jsonify, request
 from marshmallow import INCLUDE
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
@@ -24,6 +25,7 @@ from constants.user_roles import UserRoles
 from libs.mailgun import Mailgun, MailGunException
 from libs.strings import get_text
 from helpers.pagination_and_sorting import paginate_sort_filter_user_profiles
+from blacklist_redis import jwt_redis_blocklist
 
 
 user_schema = UserSchema(unknown=INCLUDE)
@@ -103,8 +105,15 @@ class UserLogout(Resource):
     @classmethod
     @jwt_required()
     def post(cls):
+
+        """ # In memory Token blacklisting, not working when scaling 
         jti = get_jwt()['jti']
         BLACKLIST.add(jti)
+        return {"message": get_text("USER_LOGGED_OUT")}, HTTP_200_OK """
+
+        # Token blacklisting in very fast Redis DB
+        jti = get_jwt()["jti"]
+        jwt_redis_blocklist.set(jti, "")
         return {"message": get_text("USER_LOGGED_OUT")}, HTTP_200_OK
 
 

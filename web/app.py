@@ -4,6 +4,8 @@ from flask_jwt_extended import JWTManager
 from marshmallow import ValidationError
 
 from constants.http_status_codes import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
+from helpers.docker_id import get_docker_id
+from blacklist_redis import jwt_redis_blocklist
 from blacklist import BLACKLIST
 from resources.user import (
     UserRegister,
@@ -60,10 +62,23 @@ def handle_marshmallow_validation(err):
 jwt = JWTManager(app)
 
 
-# Check if Token is blacklisted
-@jwt.token_in_blocklist_loader
+# Check if Token is blacklisted in Memory, not working when scaling
+""" @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(arg, decrypted_token):
-    return decrypted_token["jti"] in BLACKLIST
+    return decrypted_token["jti"] in BLACKLIST """
+
+
+# Callback function to check if a JWT exists in the Redis blocklist
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload: dict):
+    jti = jwt_payload["jti"]
+    token_in_redis = jwt_redis_blocklist.get(jti)
+    return token_in_redis is not None
+
+
+@app.route("/docker_id")
+def home():
+    return f"App instance: {get_docker_id()}"
 
 
 api.add_resource(UserRegister, "/register")

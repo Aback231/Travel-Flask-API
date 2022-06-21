@@ -10,3 +10,4 @@ marshmallow-sqlalchemy
 requests
 python-dateutil
 gunicorn
+redis

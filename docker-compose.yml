@@ -1,14 +1,18 @@
 version: '3'
 services:
   web:
-    build: ./web
-    container_name: web
-    ports:
-      - "5000:5000"
+    build: 
+      context: ./web
+      dockerfile: Dockerfile_flask_app
+    # Filas to scale when custom_name and port mapping are set
+    # container_name: web
+    # ports:
+    #   - "5000:5000"
     env_file:
       - web/.env
-    links:
+    depends_on:
       - db
+      - redis
   db:
     image: postgres:latest
     container_name: postgres_db_container
@@ -21,6 +25,23 @@ services:
         POSTGRES_USER: user
         POSTGRES_PASSWORD: pass
         POSTGRES_DB: db
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis:/var/lib/redis/data
+  nginx:
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile_nginx
+    container_name: nginx
+    ports:
+      - 80:80
+    depends_on:
+      - web
   pgadmin:
     container_name: pgadmin4_container
     image: dpage/pgadmin4
@@ -33,3 +54,4 @@ services:
 
 volumes:
   ods:
+  redis:
