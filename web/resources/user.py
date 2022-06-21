@@ -105,7 +105,6 @@ class UserLogout(Resource):
     @classmethod
     @jwt_required()
     def post(cls):
-
         """ # In memory Token blacklisting, not working when scaling 
         jti = get_jwt()['jti']
         BLACKLIST.add(jti)

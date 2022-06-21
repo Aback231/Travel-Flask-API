@@ -68,7 +68,7 @@ def check_if_token_in_blacklist(arg, decrypted_token):
     return decrypted_token["jti"] in BLACKLIST """
 
 
-# Callback function to check if a JWT exists in the Redis blocklist
+# Callback function to check if a JWT exists in the Redis blacklist
 @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(jwt_header, jwt_payload: dict):
     jti = jwt_payload["jti"]
