@@ -10,6 +10,8 @@ Docker-compose is used to build all the services, and make them comunicate with 
 
 `postgres_db_container` service contains postgres DB server.
 
+`nginx` service contains nginx load balancer.
+
 `pgadmin4_container` service contains pgadmin4 to view postgres DB visually.
 
 https://www.mailgun.com/ is used as email service (free domain for testing). After getting free API key, email which receives messages, needs to be approved first.
