@@ -24,7 +24,7 @@ By default flask API is running on http://127.0.0.1:80
 
 Endpoint http://127.0.0.1/docker_id, loaded in browser, displays Docker container ID running your request.
 
-Tested on: `Arch Linux` and `Ubuntu 21.10`
+Tested on: `macOS Monterey`, `Arch Linux` and `Ubuntu 21.10`
 
 ## Documentation
 
