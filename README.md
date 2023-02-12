@@ -1,4 +1,4 @@
-# Python Flask Backend API with: Nginx as load balancer, SQLAlchemy, Redis and PostgreSQL DB's.
+# Python Flask Backend API | Nginx | SQLAlchemy ORM | PostgreSQL and Redis DB's
 
 ## Services
 
